@@ -1,0 +1,19 @@
+{
+  "name": "output-geoservices",
+  "version": "8.1.12",
+  "main": "src/index.js",
+  "scripts": {},
+  "license": "Apache-2.0",
+  "dependencies": {},
+  "jest": {
+    "coverageProvider": "v8",
+    "coverageDirectory": ".coverage",
+    "coverageReporters": [
+      "json",
+      "json-summary"
+    ],
+    "testMatch": [
+      "<rootDir>/src/**/*.spec.[jt]s?(x)"
+    ]
+  }
+}

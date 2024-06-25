@@ -1,0 +1,10 @@
+{
+  "name": "logger",
+  "version": "5.0.0",
+  "main": "src/index.js",
+  "scripts": {},
+  "license": "Apache-2.0",
+  "dependencies": {
+    "winston": "^3.13.0"
+  }
+}

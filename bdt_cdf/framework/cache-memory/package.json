@@ -1,0 +1,11 @@
+{
+  "name": "cache-memory",
+  "version": "6.0.0",
+  "main": "src/index.js",
+  "scripts": {},
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@alloc/quick-lru": "^5.2.0",
+    "lodash": "^4.17.21"
+  }
+}
