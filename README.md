@@ -24,3 +24,6 @@ This repo is a exploratory effort into using custom data feeds with big data.
 - https://enterprise.arcgis.com/en/server/latest/install/windows/welcome-to-the-arcgis-for-server-install-guide.htm
 - https://www.esri.com/arcgis-blog/products/arcgis-enterprise/data-management/dev-summit-2023-custom-data-feeds/
 - https://www.esri.com/arcgis-blog/products/arcgis-enterprise/developers/new-in-arcgis-enterprise-11-1-custom-data-feeds/
+- https://youtu.be/0T9iF4FSoxs?si=9C5oBLcO-sw4m1-c
+- https://mediaspace.esri.com/media/t/1_kk12l8t8
+- https://koopjs.github.io/docs/available-plugins/providers
