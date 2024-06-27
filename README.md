@@ -42,6 +42,7 @@ This repo is a exploratory effort into using custom data feeds with big data.
 - One option is to use docker and package the express server to run in the cloud as a docker container
 - Another option is to use the cdf cli that comes with the ArcGIS Enterprise SDK. Do `cdf export <providername>` which will export the code into a `.cdpk` file. 
 - Take the `.cdpk` file and upload it to ArcGIS Server using the ArcGIS Server REST Admin API upload operation see more [here](https://www.esri.com/arcgis-blog/products/arcgis-enterprise/developers/new-in-arcgis-enterprise-11-1-custom-data-feeds/)
+- A `.cdpk` is just a renamed zip file that is uploaded to ArcGIS Server for deployment. You can see and example of one with `csv.cdpk` in this repo 
 
 ## ArcGIS Server Installation 
 - Here is a helpful step by step [guide](https://enterprise.arcgis.com/en/server/latest/install/windows/steps-to-get-arcgis-for-server-up-and-running.htm)
