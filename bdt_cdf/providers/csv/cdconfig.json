@@ -7,5 +7,6 @@
   "properties": {
     "hosts": true,
     "disableIdParam": false
-  }
+  },
+  "fileName": "csv.cdpk"
 }
