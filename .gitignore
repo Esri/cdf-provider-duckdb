@@ -23,5 +23,3 @@ logs
 .env*
 
 .vscode
-
-cities.csv

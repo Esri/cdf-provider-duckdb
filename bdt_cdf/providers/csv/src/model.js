@@ -93,12 +93,11 @@ async function readFromPath(path) {
 //     return birthtimeB - birthtimeA;
 //   });
 
-    const allData = [];
     const readStream = fs.createReadStream(path);
     const data = await parseData(readStream);
-    allData.push(...data);
   
-    return allData;
+  
+    return data;
 }
 
 async function parseData(readStream) {

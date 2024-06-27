@@ -27,9 +27,6 @@ This repo is a exploratory effort into using custom data feeds with big data.
 2. Install ArcGIS Enterprise SDK by manually installing the exe from Esri internal release network drive (must be on Esri network) `\\esri.com\software\Esri\Released\113_Final` with the file name `ArcGIS_Enterprise_SDK_Windows_113_190284.exe`. Copy this to your desktop and run the exe
 3. After following through setup, restart your cmd window and then do `cdf -h`. This is supposed to display a help menu after installing. For me nothing showed up, so I went to `C:\Program Files\ArcGIS\EnterpriseSDK\customdatacli` and ran `activate_cdf.bat` which solved my issues and made `cdf` a recognizable command.
 
-## ArcGIS Server Installation 
-- TODO 
-
 ## Creating a new custom datafeed app
 - Once CDF cli is installed from Enterprise SDK, do `cdf createapp new_cdf` which will generate a bunch of nodeJS boilerplate for you (`/bdt_cdf` contains an example of all of this boilerplate). A custom datafeed is built on top of [Koop](https://koopjs.github.io/docs) which is built on top of Express.JS 
 
@@ -44,6 +41,9 @@ This repo is a exploratory effort into using custom data feeds with big data.
 - One option is to use docker and package the express server to run in the cloud 
 - Another option is to use the cdf cli that comes with the ArcGIS Enterprise SDK. Do `cdf export <providername>` which will export the code into a `.cdpk` file. 
 - Take the `.cdpk` file and upload it to ArcGIS Server using the ArcGIS Server REST Admin API upload operation see more [here](https://www.esri.com/arcgis-blog/products/arcgis-enterprise/developers/new-in-arcgis-enterprise-11-1-custom-data-feeds/)
+
+## ArcGIS Server Installation 
+- TODO 
 
 ## Helpful Resouces
 - https://developers.arcgis.com/enterprise-sdk/
