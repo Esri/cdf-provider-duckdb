@@ -6,7 +6,7 @@ This repo is a exploratory effort into using custom data feeds with big data.
 ## ⚡ Quickstart
 - If you are wanting to use the existing providers and data feeds inside of this repo under `/bdt_cdf`, just do `npm install` (note: this untested)
 - Then to run do `npm start` which will start up the express server. To confirm things are working send a GET request to `localhost:8080/csv/rest/info`. The following routes should be displayed when running the start command 
-```
+```console
 2024-06-27T17:46:32.174Z info: registered cache: Cache v6.0.0
 2024-06-27T17:46:32.177Z info: registered output: GeoServices v8.1.12
 2024-06-27T17:46:32.185Z info: "GeoServices" routes for the "csv" provider:
