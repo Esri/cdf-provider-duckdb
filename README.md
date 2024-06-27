@@ -34,16 +34,20 @@ This repo is a exploratory effort into using custom data feeds with big data.
 - To create a new custom data feed you need to make a data provider. `cd` into your new app directory and then do `cdf createprovider <customprovidername>`
 - This will add a `/providers` folder and within this there will be a folder named what you named it above 
 - Within the provider there is a `model.js` file which handles the logic for fetching the data and returning GeoJSON 
-- For an example on how this works see `providers/csv` which is forked from [koop-provider-csv](https://github.com/koopjs/koop-provider-csv). The `model.js` reads from a `config/default.json` which contains metadata and information about the schema structure of the csv. It then uses Papaparse to read the csv and then translate it to GeoJSON (see `utils/translate-csv.js`)
+- For an example on how this works see `providers/csv` which is forked from [koop-provider-csv](https://github.com/koopjs/koop-provider-csv). The `model.js` reads from a `config/default.json` which contains metadata and information about the schema structure of the csv. It then uses [Papaparse](https://www.papaparse.com/) to read the csv and then translate it to GeoJSON (see `utils/translate-csv.js`)
 - After adding code to fetch your data from your datasource and then return as GeoJSON, to test the server do `npm start` which should display a list of routes in the terminal 
+- Koop contains existing provider [plugins](https://koopjs.github.io/docs/available-plugins/providers) you can use as an example 
 
 ## Deploying a CDF 
-- One option is to use docker and package the express server to run in the cloud 
+- One option is to use docker and package the express server to run in the cloud as a docker container
 - Another option is to use the cdf cli that comes with the ArcGIS Enterprise SDK. Do `cdf export <providername>` which will export the code into a `.cdpk` file. 
 - Take the `.cdpk` file and upload it to ArcGIS Server using the ArcGIS Server REST Admin API upload operation see more [here](https://www.esri.com/arcgis-blog/products/arcgis-enterprise/developers/new-in-arcgis-enterprise-11-1-custom-data-feeds/)
 
 ## ArcGIS Server Installation 
-- TODO 
+- Here is a helpful step by step [guide](https://enterprise.arcgis.com/en/server/latest/install/windows/steps-to-get-arcgis-for-server-up-and-running.htm)
+- First install `ArcGIS_Server_Windows_113_190188.exe` from Esri internal release network drive (must be on Esri network) `\\esri.com\software\Esri\Released\113_Final`
+- In a production environment this would be on a cloud server machine
+- TODO
 
 ## Helpful Resouces
 - https://developers.arcgis.com/enterprise-sdk/
