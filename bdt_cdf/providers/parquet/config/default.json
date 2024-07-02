@@ -1,0 +1,19 @@
+{
+    "provider-parquet": {
+      "sources": {
+        "my-parquet": {
+          "path": "C:\\Users\\dre11620\\Downloads\\BDT_cdf\\bdt_cdf\\data\\randomUSPoints.parquet",
+          "metadata": {
+            "name": "USPoints",
+            "description": "random US points",
+            "idField": ""
+          },
+          "geometryColumns": {
+            "SHAPE": "SHAPE1",
+            "latitude": "YMIN",
+            "longitude": "XMIN"
+          }
+        }
+      }
+    }
+  }
