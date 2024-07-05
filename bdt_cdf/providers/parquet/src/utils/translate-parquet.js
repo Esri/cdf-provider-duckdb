@@ -1,25 +1,28 @@
+var wkx = require('wkx');
+var idCount = 0;
+
 function translate(data, config) {
     const metadata = config.metadata || {};
-    const columns = Object.keys(data[0][config.geometryColumns.SHAPE]);
-  
-    if (metadata.idField && !columns.includes(metadata.idField)) {
+    const columns = Object.keys(data[0]);
+    
+    if (!columns.includes(metadata.idField)) {
       console.warn(`Specified ID field "${metadata.idField}" is not found.`);
+      metadata.idField = "ID";
     }
-  
+   
     return {
       type: "FeatureCollection",
       features: data.map((row) =>
-        formatFeature(row[config.geometryColumns.SHAPE], columns, config.geometryColumns, metadata.idField)
+        formatFeature(row, columns, config.WKBColumns, metadata.idField)
       ),
       metadata,
     };
   }
   
-  function formatFeature(values, columns, geometryColumns, idField) {
-    // Most of what we need to do here is extract the longitude and latitude
-    // TODO: Support other geometries 
-    // TODO: Support projections 
-    const feature = {
+  function formatFeature(values, columns, wkbCols, idField) {
+    // TODO: Support projections?
+    // TODO: support multiple WKB columns in one dataframe? 
+    let feature = {
       type: "Feature",
       properties: {},
       geometry: {
@@ -29,20 +32,22 @@ function translate(data, config) {
     };
   
     for (let i = 0; i < columns.length; i++) {
-        // TODO: improve this with a check 
       const value = values[columns[i]];
   
-      if (columns[i] === geometryColumns.longitude) {
-        feature.geometry.coordinates.unshift(value);
-      } else if (columns[i] === geometryColumns.latitude) {
-        feature.geometry.coordinates.push(value);
+      if (wkbCols.includes(columns[i])) {
+        let wkbBuffer = values[columns[i]]
+        var geometry = wkx.Geometry.parse(wkbBuffer);
+        feature.geometry = geometry.toGeoJSON();
       } else if (columns[i] == idField && !isValidId(value)) {
         console.warn(`Invalid ID value: ${value}`);
-    } else if (columns[i] == "WKB") { // TODO: improve this 
-        let test = true;
       } else {
         feature.properties[columns[i]] = value;
       }
+    }
+
+    if (!columns.includes(idField)){
+        feature.properties["ID"] = idCount; 
+        idCount++;
     }
   
     if (!isValidGeometry(feature.geometry)) {
