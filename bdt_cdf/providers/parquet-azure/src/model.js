@@ -14,7 +14,7 @@ Model.prototype.getData = async function (req, callback) {
 
   try {
     let parquetData = await readFromAzure(sourceConfig.blobUrl, sourceConfig.fileName);
-    fs.rmSync(sourceConfig.fileName, { recursive: true, force: true }); 
+    //fs.rmSync(sourceConfig.fileName, { recursive: true, force: true }); 
     const geojson = translate(parquetData, sourceConfig);
     callback(null, geojson);
   } catch (error) {
@@ -35,12 +35,12 @@ async function readFromAzure(containerUrl, fileName) {
   else { 
     console.log("Its a folder, downloading the files");
     if (!fs.existsSync(fileName)) {
-      fs.mkdirSync(fileName);
-    }
-    for await (const blob of folderFiles) {
-      if (blob.kind !== "prefix") {
-        let blobClient = containerClient.getBlobClient(blob.name);
-        await blobClient.downloadToFile("./" + blob.name)
+      await fs.promises.mkdir(fileName);
+      for await (const blob of folderFiles) {
+        if (blob.kind !== "prefix") {
+          let blobClient = containerClient.getBlobClient(blob.name);
+          await blobClient.downloadToFile("./" + blob.name)
+        }
       }
     }
   }
