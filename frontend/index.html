@@ -31,8 +31,9 @@
 
         const featureLayer = new FeatureLayer({
           //url: "https://services.arcgis.com/V6ZHFr6zdgNZuVG0/arcgis/rest/services/Landscape_Trees/FeatureServer/0"
-          //url: "localhost:8080/parquet/rest/services/:host/my-parquet/FeatureServer/0"
-          url: "localhost:8080/csv/rest/services/:host/my-csv/FeatureServer/0"
+          //url: "http://127.0.0.1:8080/parquet/rest/services/:host/my-parquet/FeatureServer/0"
+          url: "http://127.0.0.1:8080/parquet-azure/rest/services/my-parquet/FeatureServer/0"
+          //url: "http://127.0.0.1:8080/csv/rest/services/:host/my-csv/FeatureServer/0"
         });
 
         map.add(featureLayer);
