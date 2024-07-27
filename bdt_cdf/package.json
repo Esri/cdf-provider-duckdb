@@ -17,10 +17,6 @@
     "is-url-superb": "^6.1.0",
     "klaw-sync": "^6.0.0",
     "papaparse": "^5.4.1",
-    "terraformer": "^1.0.12",
-    "terraformer-geostore": "^1.0.5",
-    "terraformer-geostore-memory": "^1.0.0",
-    "terraformer-rtree": "^1.0.0",
     "wkx": "^0.5.0"
   },
   "devDependencies": {
