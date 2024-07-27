@@ -44,8 +44,6 @@ Model.prototype.getData = async function (req, callback) {
   }
 }
 
-
-
 async function readFromAzure(containerUrl, fileName) {
   const containerClient = new ContainerClient(containerUrl);
 
