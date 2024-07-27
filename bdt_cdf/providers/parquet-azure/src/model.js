@@ -4,11 +4,8 @@ const fs = require('fs');
 const path = require('path');
 const translate = require("./utils/translate-parquet");
 const { ContainerClient } = require("@azure/storage-blob");
-const GeoStore = require('terraformer-geostore').GeoStore
-const RTree = require('terraformer-rtree').RTree
-const MemoryStore = require('terraformer-geostore-memory').Memory
-const util = require('util');
-
+var geojsonRbush = require('geojson-rbush').default;
+const turf = require('@turf/turf');
 
 function Model(koop) {}
 
@@ -19,70 +16,28 @@ Model.prototype.getData = async function (req, callback) {
   const geoserviceParams = req.query;
 
   try {
-    var store = new GeoStore({
-      store: new MemoryStore(),
-      index: new RTree()
-    });
-
     let parquetData = await readFromAzure(sourceConfig.blobUrl, sourceConfig.fileName);
+    var tree = geojsonRbush();
     const geojson = translate(parquetData, sourceConfig);
-    store.add(geojson);
+    const fc = turf.featureCollection(geojson.features);
+    fc.properties = geojson.properties;
+    tree.load(fc);
 
     if ("geometry" in geoserviceParams && "geometryType" in geoserviceParams) {
       if (geoserviceParams.geometryType === "esriGeometryEnvelope") {
         let geom = JSON.parse(geoserviceParams.geometry);
-        xmin = geom.xmin;
-        ymin = geom.ymin;
-        xmax = geom.xmax;
-        ymax = geom.ymax;
-        
-        let feature = {
-          type: "Feature",
-          properties: {},
-          geometry: {
-            type: "Polygon",
-            coordinates: [],
-          },
-        };
-
-        feature["bbox"] = [xmin, ymin, xmax, ymax];
-        feature.geometry.coordinates = [[
-          [xmin, ymin],
-          [xmin, ymax],
-          [xmax, ymax],
-          [xmax, ymin],
-          [xmin, ymin]
-        ]];
-
-        // await store.within({
-        //   geojson: feature,
-        //   onComplete: rows => { 
-        //     console.log(rows);
-        //   } 
-        // })
-
-        // const storePromise = util.promisify(store.within);
-        // async function runWithin(){
-        //   try {
-        //     const res = await storePromise(feature);
-        //     console.log(res);
-        //   } catch (error) {
-        //     console.error(error); 
-        //   }
-        // }
-        // await runWithin();
-
-        
-
-        store.within(feature, function (err, res) {
-          // Node.js style callback
-        });
-        console.log(test);
-
+        var poly = turf.polygon([[
+          [geom.xmin, geom.ymin], 
+          [geom.xmin, geom.ymax], 
+          [geom.xmax, geom.ymax], 
+          [geom.xmax, geom.ymin], 
+          [geom.xmin, geom.ymin]
+        ]]);
+        let intersected = tree.search(poly);
+        callback(null, intersected);
       }
     }
 
-    callback(null, geojson);
   } catch (error) {
     console.error(error);
     callback("Unable to read parquet data");

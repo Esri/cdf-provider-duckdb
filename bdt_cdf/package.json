@@ -10,8 +10,10 @@
   "dependencies": {
     "@azure/storage-blob": "^12.23.0",
     "@dsnp/parquetjs": "^1.7.0",
+    "@turf/turf": "^7.0.0",
     "config": "^3.2.4",
     "fs-extra": "^9.0.1",
+    "geojson-rbush": "^3.2.0",
     "is-url-superb": "^6.1.0",
     "klaw-sync": "^6.0.0",
     "papaparse": "^5.4.1",

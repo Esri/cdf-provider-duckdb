@@ -2,7 +2,7 @@ var wkx = require('wkx');
 var idCount = 0;
 
 function translate(data, config) {
-    const metadata = config.metadata || {};
+    const metadata = config.properties || {};
     const columns = Object.keys(data[0]);
     
     if (!columns.includes(metadata.idField)) {
@@ -15,7 +15,7 @@ function translate(data, config) {
       features: data.map((row) =>
         formatFeature(row, columns, config.WKBColumn, metadata.idField)
       ),
-      metadata,
+      properties: metadata,
     };
   }
   
