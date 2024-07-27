@@ -3,12 +3,12 @@
       "sources": {
         "my-parquet": {
           "blobUrl": "https://dscatterday.blob.core.windows.net/main?sp=rl&st=2024-07-24T20:28:51Z&se=2025-07-25T04:28:51Z&spr=https&sv=2022-11-02&sr=c&sig=xGSz5EKkeqlAgIhQLph5w2g8hibR0bKCDGH7r%2B2Cb94%3D",
-          "fileName": "USPoints.parquet",
+          "fileName": "smallNYTaxi.parquet",
           "WKBColumn": "WKB",
-          "metadata": {
-            "name": "USPoints",
-            "description": "random US points",
-            "idField": ""
+          "properties": {
+            "name": "smallNYTaxi",
+            "description": "one million NY Taxi points",
+            "idField": "VendorID"
           }
         }
       }

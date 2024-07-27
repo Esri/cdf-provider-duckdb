@@ -2,12 +2,12 @@ var wkx = require('wkx');
 var idCount = 0;
 
 function translate(data, config) {
-    const metadata = config.metadata || {};
+    const metadata = config.properties || {};
     const columns = Object.keys(data[0]);
     
     if (!columns.includes(metadata.idField)) {
-      console.warn(`Specified ID field "${metadata.idField}" is not found.`);
-      metadata.idField = "ID";
+      console.warn(`Specified ID field "${metadata.idField}" is not found. Setting to a default id`);
+      metadata.idField = "id";
     }
    
     return {
@@ -15,7 +15,7 @@ function translate(data, config) {
       features: data.map((row) =>
         formatFeature(row, columns, config.WKBColumn, metadata.idField)
       ),
-      metadata,
+      properties: metadata,
     };
   }
   
@@ -36,15 +36,20 @@ function translate(data, config) {
         let wkbBuffer = values[columns[i]]
         var geometry = wkx.Geometry.parse(wkbBuffer);
         feature.geometry = geometry.toGeoJSON();
-      } else if (columns[i] == idField && !isValidId(value)) {
-        console.warn(`Invalid ID value: ${value}`);
       } else {
+        if (columns[i] == idField) {
+          if (!isValidId(value)) {
+            console.warn(`Invalid ID value: ${value}`);
+          } else {
+            feature["id"] = value.toString();
+          }
+        }
         feature.properties[columns[i]] = value;
       }
     }
 
     if (!columns.includes(idField)){
-        feature.properties["ID"] = idCount; 
+        feature["id"] = idCount.toString(); 
         idCount++;
     }
   
