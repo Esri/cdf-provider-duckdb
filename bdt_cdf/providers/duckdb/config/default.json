@@ -8,8 +8,7 @@
           "geomOutColumn": "geometry",
           "properties": {
             "name": "smallNYTaxi",
-            "description": "one million NY Taxi points",
-            "idField": "VendorID"
+            "description": "one million NY Taxi points"
           }
         }
       }

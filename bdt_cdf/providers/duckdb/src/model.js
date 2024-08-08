@@ -14,20 +14,25 @@ class Model {
     // TODO: function to verify config params and throw error if any are null 
     const config = koopConfig?.duckdb;
     const sourceConfig = config.sources?.datasource;
+    this.idField = "OBJECTID";
     this.#sourceConfig = sourceConfig;
-    this.#duckdb = initDuckDb(sourceConfig);
+    this.#duckdb = initDuckDb(sourceConfig, this.idField);
 
-    async function initDuckDb(sourceConfig) {
+    async function initDuckDb(sourceConfig, idField) {
       // TODO: make sure this works with a single parquet file as well 
       // TODO: support multiple cloud providers and reading directly instead of to disk
-      await downloadFromAzure(sourceConfig?.blobUrl, sourceConfig?.fileName); // TODO: error checks in this 
+      // TODO: change objectid to big int to support billion sized datasets? 
+      // TODO: error handling in downloadfromazure
+      await downloadFromAzure(sourceConfig?.blobUrl, sourceConfig?.fileName); 
       const db = await Database.create(":memory:");
       await db.run(`INSTALL spatial; LOAD spatial`);
       await db.run(`
         CREATE TABLE ${sourceConfig?.properties?.name} AS 
-        SELECT * EXCLUDE ${sourceConfig?.WKBColumn}, ST_GeomFromWKB(${sourceConfig?.WKBColumn}) AS ${sourceConfig?.geomOutColumn}
+        SELECT * EXCLUDE ${sourceConfig?.WKBColumn}, 
+        ST_GeomFromWKB(${sourceConfig?.WKBColumn}) AS ${sourceConfig?.geomOutColumn}, 
+        CAST(row_number() OVER () AS INTEGER) AS ${idField}
         FROM read_parquet('${sourceConfig?.fileName}/*.parquet', hive_partitioning = true)`
-      );
+      ); 
       return db;
     }
   }
@@ -39,7 +44,7 @@ class Model {
     const { resultRecordCount } = geoserviceParams;
     const maxRecords = resultRecordCount || 2000; 
     const tableName = this.#sourceConfig?.properties?.name;
-    const idField = this.#sourceConfig?.properties?.idField;
+    const idField = this.idField;
     const geometryField = this.#sourceConfig?.geomOutColumn;
     const db = await this.#duckdb;
     const con = await db.connect();
@@ -63,7 +68,7 @@ class Model {
       }
 
       console.time("translate");
-      const geojson = translate(rows, this.#sourceConfig);
+      const geojson = translate(rows, this.#sourceConfig, idField);
       console.timeEnd("translate");
 
       geojson.filtersApplied = generateFiltersApplied({
@@ -123,12 +128,9 @@ function buildSqlQuery(params) {
 
   const from = ` FROM ${tableName}`;
 
-  let selectFields = '';
-  if (outFields === '*') {
-    selectFields = `${outFields} EXCLUDE ${geometryField}, ST_AsGeoJSON(${geometryField}) AS ${geometryField}`;
-  } else {
-    selectFields = `${outFields}, ST_AsGeoJSON(${geometryField}) AS ${geometryField}`;
-  }
+  var selectFields = outFields === '*' ? `${outFields} EXCLUDE ${geometryField}`: `${outFields}`;
+
+  const selectClause = `${selectFields}, ST_AsGeoJSON(${geometryField}) AS ${geometryField}`
 
   const whereClause = buildSqlWhere({ where, objectIds, idField, geometry, geometryField, inSR, spatialRel });
 
@@ -138,7 +140,7 @@ function buildSqlQuery(params) {
 
   const offsetClause = resultOffset ? ` OFFSET ${resultOffset}` : '';
 
-  return `SELECT ${selectFields}${from}${whereClause}${orderByClause}${limitClause}${offsetClause}`;   
+  return `SELECT ${selectClause}${from}${whereClause}${orderByClause}${limitClause}${offsetClause}`;   
 }
 
 function buildSqlWhere({ where, objectIds, idField, geometry, geometryField, inSR, spatialRel }) {
