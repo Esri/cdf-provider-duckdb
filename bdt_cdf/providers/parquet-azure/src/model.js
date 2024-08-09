@@ -6,41 +6,66 @@ const translate = require("./utils/translate-parquet");
 const { ContainerClient } = require("@azure/storage-blob");
 var geojsonRbush = require('geojson-rbush').default;
 const turf = require('@turf/turf');
+const Cache = require('@koopjs/cache-memory');
 
-function Model(koop) {}
+const filtersApplied = {
+  geometry: true,
+};
+
+function Model(koop) {
+  this.cache = new Cache({ size: 2000});
+}
 
 Model.prototype.getData = async function (req, callback) {
   const config = koopConfig["provider-parquet-azure"];
   const sourceId = req.params.id;
   const sourceConfig = config.sources[sourceId];
   const geoserviceParams = req.query;
+  let tree = geojsonRbush();
+  let geojson = {};
 
   try {
-    let parquetData = await readFromAzure(sourceConfig.blobUrl, sourceConfig.fileName);
-    var tree = geojsonRbush();
-    const geojson = translate(parquetData, sourceConfig);
-    const fc = turf.featureCollection(geojson.features);
-    fc.properties = geojson.properties;
-    tree.load(fc);
-
-    if ("geometry" in geoserviceParams && "geometryType" in geoserviceParams) {
-      if (geoserviceParams.geometryType === "esriGeometryEnvelope") {
-        let geom = JSON.parse(geoserviceParams.geometry);
-        var poly = turf.polygon([[
-          [geom.xmin, geom.ymin], 
-          [geom.xmin, geom.ymax], 
-          [geom.xmax, geom.ymax], 
-          [geom.xmax, geom.ymin], 
-          [geom.xmin, geom.ymin]
-        ]]);
-        let intersected = tree.search(poly);
-        callback(null, intersected);
+    let options = {};
+    tree = await this.cache.retrieve('parquet', options);
+    if (!tree) {
+      let parquetData = await readFromAzure(sourceConfig.blobUrl, sourceConfig.fileName);
+      geojson = translate(parquetData, sourceConfig);
+      options = {
+        ttl: 2000
       }
+      const fc = turf.featureCollection(geojson.features);
+      fc.properties = geojson.properties;
+      tree = geojsonRbush();
+      tree.load(fc);
+      this.cache.insert('parquet', tree, options, err => {})
     }
-
   } catch (error) {
-    console.error(error);
-    callback("Unable to read parquet data");
+      console.error(error);
+      callback("Unable to read parquet data");
+  }
+  
+
+  if ("geometry" in geoserviceParams && "geometryType" in geoserviceParams) {
+    if (geoserviceParams.geometryType === "esriGeometryEnvelope") {
+      let geom = JSON.parse(geoserviceParams.geometry);
+      var poly = turf.polygon([[
+        [geom.xmin, geom.ymin], 
+        [geom.xmin, geom.ymax], 
+        [geom.xmax, geom.ymax], 
+        [geom.xmax, geom.ymin], 
+        [geom.xmin, geom.ymin]
+      ]]);
+      let intersected = tree.search(poly);
+      return callback(null, {
+        ...intersected,
+        filtersApplied,
+      });
+
+    }
+  } else {
+    return callback(null, {
+      ...geojson,
+    });
   }
 }
 
