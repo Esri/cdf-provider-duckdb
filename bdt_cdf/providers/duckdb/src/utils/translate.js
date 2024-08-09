@@ -12,7 +12,6 @@ function translate(data, config, idField) {
       features: data.map((row) =>
         formatFeature(row, columns, idField, config.geomOutColumn)
       ),
-      properties: metadata,
     };
   }
   

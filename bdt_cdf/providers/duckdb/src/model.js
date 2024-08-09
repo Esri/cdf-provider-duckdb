@@ -10,19 +10,21 @@ class Model {
   #sourceConfig;
 
   constructor(koop) {
-    console.log("Downloading data and creating duckDB");
-    // TODO: function to verify config params and throw error if any are null 
-    const config = koopConfig?.duckdb;
-    const sourceConfig = config.sources?.datasource;
+    this.#sourceConfig = koopConfig?.duckdb?.sources?.datasource;
     this.idField = "OBJECTID";
-    this.#sourceConfig = sourceConfig;
-    this.#duckdb = initDuckDb(sourceConfig, this.idField);
+    this.maxRecordCountPerPage = 10000;
+    this.geometryField = this.#sourceConfig?.geomOutColumn;
+    this.tableName = this.#sourceConfig?.properties?.name;
+
+    this.#duckdb = initDuckDb(this.#sourceConfig, this.idField);
+    console.log("DuckDB initialized");
 
     async function initDuckDb(sourceConfig, idField) {
       // TODO: make sure this works with a single parquet file as well 
       // TODO: support multiple cloud providers and reading directly instead of to disk
-      // TODO: change objectid to big int to support billion sized datasets? 
+      // TODO: change objectid to big int to support > MAX_INT dataset sizes?  
       // TODO: error handling in downloadfromazure
+      // TODO: function to verify config params and throw error if any are null 
       await downloadFromAzure(sourceConfig?.blobUrl, sourceConfig?.fileName); 
       const db = await Database.create(":memory:");
       await db.run(`INSTALL spatial; LOAD spatial`);
@@ -33,7 +35,7 @@ class Model {
         CAST(row_number() OVER () AS INTEGER) AS ${idField}
         FROM read_parquet('${sourceConfig?.fileName}/*.parquet', hive_partitioning = true)`
       ); 
-      return db;
+      return db
     }
   }
 
@@ -41,43 +43,58 @@ class Model {
     const {
       query: geoserviceParams,
     } = req;
-    const { resultRecordCount } = geoserviceParams;
-    const maxRecords = resultRecordCount || 2000; 
-    const tableName = this.#sourceConfig?.properties?.name;
-    const idField = this.idField;
-    const geometryField = this.#sourceConfig?.geomOutColumn;
+    const { resultRecordCount, returnCountOnly, returnIdsOnly } = geoserviceParams;
+    const fetchSize = resultRecordCount || this.maxRecordCountPerPage; 
     const db = await this.#duckdb;
     const con = await db.connect();
 
-    try { // TODO: support datetime queries? 
-      const sqlQuery = buildSqlQuery({
-        ...geoserviceParams,
-        idField,
-        geometryField,
-        tableName,
-        maxRecords,
-      });
+    // TODO: support datetime queries?
+    try {  
+      // only return back one row for metadata purposes
+      let isMetadataRequest = (Object.keys(geoserviceParams).length == 1 && geoserviceParams.hasOwnProperty("f")); 
+      // only return back the entire DB as object ids with no limits   
+      let isOnlyIdRequest = (returnCountOnly || returnIdsOnly); 
 
-      console.time("query");
+      const sqlQuery = buildSqlQuery(
+        geoserviceParams,
+        this.idField,
+        this.geometryField,
+        this.tableName,
+        fetchSize,
+        isMetadataRequest,
+        isOnlyIdRequest
+      );
       const rows = await con.all(sqlQuery);
-      console.timeEnd("query");
-
+    
       console.log("Data size: " + rows.length);
-      if (rows.length == 0) {
+      // TODO: improve this check
+      if (rows.length == 0) { 
         return callback(null, { type: "FeatureCollection", features: [] });
       }
 
-      console.time("translate");
-      const geojson = translate(rows, this.#sourceConfig, idField);
-      console.timeEnd("translate");
+      var geojson = {};
+      if (isOnlyIdRequest) {
+        geojson = rows;
+        geojson.count = rows.length;
+      } else { 
+        console.time("translate");
+        geojson = translate(rows, this.#sourceConfig, this.idField);
+        console.timeEnd("translate");
+      }
 
-      geojson.filtersApplied = generateFiltersApplied({
-        ...geoserviceParams,
-        idField,
-        geometryField,
-        maxRecords,
-      });
+      geojson.filtersApplied = generateFiltersApplied(
+        geoserviceParams,
+        this.idField,
+        this.geometryField,
+      );
 
+      geojson.metadata = ({
+        ...this.#sourceConfig?.properties,
+        maxRecordCount: this.maxRecordCountPerPage,
+        idField: this.idField,
+        limitExceeded: 1000000 > rows.length,
+        //extent?
+      }) 
       callback(null, geojson);
 
     } catch (error) {
@@ -85,7 +102,6 @@ class Model {
     }
   }
 }
-
 
 async function downloadFromAzure(containerUrl, fileName) {
   const containerClient = new ContainerClient(containerUrl);
@@ -110,35 +126,42 @@ async function downloadFromAzure(containerUrl, fileName) {
   }
 }
 
-function buildSqlQuery(params) {
+function buildSqlQuery(geoParams, idField, geometryField, tableName, fetchSize, isMetadataRequest, isOnlyIdRequest) {
   const {
     where,
     outFields = '*',
     orderByFields,
     objectIds,
-    geometryField,
-    tableName,
-    idField,
-    maxRecords,
     geometry,
     inSR, 
     resultOffset,
     spatialRel
-  } = params;
+  } = geoParams;
+
+  let selectClause = '';
+  if (isOnlyIdRequest) {
+    selectClause = `${idField}`;
+  }
+  else if (outFields === '*') {
+    selectClause = `${outFields} EXCLUDE ${geometryField}, ST_AsGeoJSON(${geometryField}) AS ${geometryField}`
+  }
+  else {
+    selectClause = `${outFields}, ST_AsGeoJSON(${geometryField}) AS ${geometryField}`
+  }
+
+  if (isMetadataRequest) { 
+    fetchSize = 1;
+  }
 
   const from = ` FROM ${tableName}`;
-
-  var selectFields = outFields === '*' ? `${outFields} EXCLUDE ${geometryField}`: `${outFields}`;
-
-  const selectClause = `${selectFields}, ST_AsGeoJSON(${geometryField}) AS ${geometryField}`
 
   const whereClause = buildSqlWhere({ where, objectIds, idField, geometry, geometryField, inSR, spatialRel });
 
   const orderByClause = orderByFields ? ` ORDER BY ${orderByFields}` : '';
 
-  const limitClause = maxRecords ? ` LIMIT ${maxRecords}` : '';
+  const limitClause = fetchSize && !isOnlyIdRequest ? ` LIMIT ${fetchSize}` : '';
 
-  const offsetClause = resultOffset ? ` OFFSET ${resultOffset}` : '';
+  const offsetClause = resultOffset && !isOnlyIdRequest ? ` OFFSET ${resultOffset}` : '';
 
   return `SELECT ${selectClause}${from}${whereClause}${orderByClause}${limitClause}${offsetClause}`;   
 }
@@ -168,6 +191,11 @@ function buildSqlWhere({ where, objectIds, idField, geometry, geometryField, inS
   }
 
   if (geometry && geometryField){
+
+    if (typeof inSR === "string") {
+      inSR = parseInt(inSR);
+    }
+
     const { geometry: geometryFilter, relation } = standardizeGeometryFilter({
       geometry,
       inSR,
@@ -204,7 +232,16 @@ function buildSqlWhere({ where, objectIds, idField, geometry, geometryField, inS
   return ' WHERE ' + sqlWhereComponents.join(' AND ');
 }
 
-function generateFiltersApplied({ where, objectIds, orderByFields, resultOffset, idField, geometry, geometryField, maxRecords }) {
+function generateFiltersApplied(geoParams, idField, geometryField) {
+  const { 
+    where, 
+    objectIds, 
+    orderByFields, 
+    resultOffset, 
+    geometry, 
+    resultRecordCount 
+  } = geoParams;
+
   const filtersApplied = {};
 
   if (where) {
@@ -227,7 +264,7 @@ function generateFiltersApplied({ where, objectIds, orderByFields, resultOffset,
     filtersApplied.geometry = true;
   }
 
-  if (maxRecords) {
+  if (resultRecordCount) {
     filtersApplied.limit = true;
   }
 
