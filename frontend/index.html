@@ -27,6 +27,14 @@
         const view = new MapView({
           container: "viewDiv",
           map: map,
+
+          extent: {
+            xmin: -74.351349,
+            ymin: 40.393608,
+            xmax: -72.880554,
+            ymax: 41.331241,
+            spatialReference: 4326
+          }
         });
 
         const featureLayer = new FeatureLayer({
@@ -38,7 +46,15 @@
           //url: "http://127.0.0.1:8080/csv/rest/services/:host/my-csv/FeatureServer/0"
         });
 
+        // featureLayer.when(() => {
+        //   return featureLayer.queryExtent();
+        // })
+        // .then((response) => {
+        //   view.goTo(response.extent);
+        // });
+
         map.add(featureLayer);
+       
       });
     </script>
   </head>
