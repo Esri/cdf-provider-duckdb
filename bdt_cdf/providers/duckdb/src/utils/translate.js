@@ -1,5 +1,6 @@
+const wkx = require("wkx");
+
 function translate(data, config, idField) {
-	const metadata = config.properties || {};
 	const columns = Object.keys(data[0]);
 
 	if (!columns.includes(idField)) {
@@ -26,9 +27,9 @@ function formatFeature(values, columns, idField, geometryField) {
 		const value = values[columns[i]];
 
 		if (columns[i] == geometryField) {
-			let geom = values[columns[i]];
-			var geometry = JSON.parse(geom);
-			feature.geometry = geometry;
+			var wkbBuffer = values[columns[i]];
+			var geometry = wkx.Geometry.parse(wkbBuffer);
+			feature.geometry = geometry.toGeoJSON();
 		} else {
 			if (columns[i] == idField) {
 				if (!isValidId(value)) {

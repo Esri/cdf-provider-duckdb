@@ -150,9 +150,9 @@ function buildSqlQuery(
 	if (isOnlyIdRequest) {
 		selectClause = `${idField}`;
 	} else if (outFields === "*") {
-		selectClause = `${outFields} EXCLUDE ${geometryField}, ST_AsGeoJSON(${geometryField}) AS ${geometryField}`;
+		selectClause = `${outFields} EXCLUDE ${geometryField}, ST_AsWKB(${geometryField}) AS ${geometryField}`;
 	} else {
-		selectClause = `${outFields}, ST_AsGeoJSON(${geometryField}) AS ${geometryField}`;
+		selectClause = `${outFields}, ST_AsWKB(${geometryField}) AS ${geometryField}`;
 	}
 
 	if (isMetadataRequest) {
