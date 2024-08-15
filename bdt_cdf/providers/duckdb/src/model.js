@@ -20,7 +20,7 @@ class Model {
 		}
 		this.#sourceConfig = koopConfig.duckdb.sources.datasource;
 		this.idField = "OBJECTID";
-		this.maxRecordCountPerPage = 25000;
+		this.maxRecordCountPerPage = 10000;
 		this.geometryField = this.#sourceConfig.geomOutColumn;
 		this.tableName = this.#sourceConfig.properties.name;
 		this.#duckdb = initDuckDb(this.#sourceConfig, this.idField);
@@ -44,45 +44,29 @@ class Model {
 
 	async getData(req, callback) {
 		const { query: geoserviceParams } = req;
-		const { resultRecordCount, returnCountOnly, returnIdsOnly } =
+		const { resultRecordCount, returnCountOnly } = // TODO: speed up returnIdsOnly with large datasets
 			geoserviceParams;
 		const fetchSize = resultRecordCount || this.maxRecordCountPerPage;
 		const db = await this.#duckdb;
-		const con = await db.connect();
 
 		try {
-			// only return back one row for metadata purposes
-			let isMetadataRequest =
-				Object.keys(geoserviceParams).length == 1 &&
-				geoserviceParams.hasOwnProperty("f");
-			// only return back the entire DB as object ids with no limits
-			let isOnlyIdRequest = returnCountOnly || returnIdsOnly;
-
 			const sqlQuery = buildSqlQuery(
 				geoserviceParams,
 				this.idField,
 				this.geometryField,
 				this.tableName,
 				fetchSize,
-				isMetadataRequest,
-				isOnlyIdRequest
 			);
-			const rows = await con.all(sqlQuery);
-
+			const rows = await db.all(sqlQuery);
 			console.log("Data size: " + rows.length);
-			// TODO: improve this check
-			if (rows.length == 0) {
-				return callback(null, { type: "FeatureCollection", features: [] });
-			}
-
-			var geojson = {};
-			if (isOnlyIdRequest) {
-				geojson = rows;
-				geojson.count = rows.length;
+	
+			var geojson = {type: "FeatureCollection", features: []};
+			if (rows.length == 0) { 
+				return callback(null, geojson);
+			} else if (returnCountOnly) { 
+				geojson.count = Number(rows[0]["count(1)"]);
 			} else {
-				console.time("translate");
 				geojson = translateToGeoJSON(rows, this.#sourceConfig, this.idField);
-				console.timeEnd("translate");
 			}
 
 			geojson.filtersApplied = generateFiltersApplied(
@@ -95,7 +79,6 @@ class Model {
 				...this.#sourceConfig?.properties,
 				maxRecordCount: this.maxRecordCountPerPage,
 				idField: this.idField,
-				limitExceeded: 1000000 > rows.length,
 				//extent?
 			};
 			callback(null, geojson);

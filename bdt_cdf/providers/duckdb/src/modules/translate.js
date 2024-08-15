@@ -41,9 +41,9 @@ function formatFeature(values, columns, idField, geometryField) {
 	}
 
 	if (!isValidGeometry(feature.geometry)) {
-		console.warn(
-			`Invalid coordinates: ${feature.geometry.coordinates}, setting to [0, 0]`
-		);
+		// console.warn(
+		// 	`Invalid coordinates: ${feature.geometry.coordinates}, setting to [0, 0]`
+		// );
 		feature.geometry.coordinates = [0, 0];
 	}
 
@@ -58,10 +58,14 @@ function isValidId(value) {
 }
 
 function isValidGeometry(geometry) {
-	return (
-		!Number.isNaN(geometry.coordinates[0]) &&
-		!Number.isNaN(geometry.coordinates[1])
-	);
+	if (!geometry || !geometry.coordinates) {
+		return false;
+	} else {
+		return (
+			!Number.isNaN(geometry.coordinates[0]) &&
+			!Number.isNaN(geometry.coordinates[1])
+		);
+	}
 }
 
 module.exports = {

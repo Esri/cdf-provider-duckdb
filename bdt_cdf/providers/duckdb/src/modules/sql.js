@@ -7,8 +7,6 @@ function buildSqlQuery(
 	geometryField,
 	tableName,
 	fetchSize,
-	isMetadataRequest,
-	isOnlyIdRequest
 ) {
 	const {
 		where,
@@ -19,19 +17,28 @@ function buildSqlQuery(
 		inSR,
 		resultOffset,
 		spatialRel,
+		returnIdsOnly,
+		returnCountOnly,
 	} = geoParams;
 
+	// only return back one row for metadata purposes
+	var isMetadataRequest =
+	Object.keys(geoParams).length == 1 &&
+	geoParams.hasOwnProperty("f");
+
+	if (isMetadataRequest) {
+		fetchSize = 1;
+	}
+
 	let selectClause = "";
-	if (isOnlyIdRequest) {
+	if (returnCountOnly) {
+		selectClause = "COUNT(1)";
+	}else if (returnIdsOnly) {
 		selectClause = `${idField}`;
 	} else if (outFields === "*") {
 		selectClause = `${outFields} EXCLUDE ${geometryField}, ST_AsWKB(${geometryField}) AS ${geometryField}`;
 	} else {
 		selectClause = `${outFields}, ST_AsWKB(${geometryField}) AS ${geometryField}`;
-	}
-
-	if (isMetadataRequest) {
-		fetchSize = 1;
 	}
 
 	const from = ` FROM ${tableName}`;
@@ -49,10 +56,10 @@ function buildSqlQuery(
 	const orderByClause = orderByFields ? ` ORDER BY ${orderByFields}` : "";
 
 	const limitClause =
-		fetchSize && !isOnlyIdRequest ? ` LIMIT ${fetchSize}` : "";
+		fetchSize && !returnIdsOnly ? ` LIMIT ${fetchSize}` : "";
 
 	const offsetClause =
-		resultOffset && !isOnlyIdRequest ? ` OFFSET ${resultOffset}` : "";
+		resultOffset && !returnIdsOnly ? ` OFFSET ${resultOffset}` : "";
 
 	return `SELECT ${selectClause}${from}${whereClause}${orderByClause}${limitClause}${offsetClause}`;
 }
