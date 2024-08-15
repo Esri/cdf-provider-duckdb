@@ -3,8 +3,8 @@
 # BDT_cdf
 This repo is an exploratory effort into using custom data feeds with big data. 
 
-## 🦆 See it in action with DuckDB: 
-https://github.com/user-attachments/assets/3729e3aa-14ab-4363-badc-5d658968026e
+## 🦆 See it in action with DuckDB on he NY City Taxi parquet Dataset (1 million rows): 
+https://github.com/user-attachments/assets/2747d827-4365-4785-985a-7614ad55ed06
 
 ## ⚡ Quickstart
 - If you are wanting to use the existing providers and data feeds inside of this repo under `/bdt_cdf`, just do `npm install` (note: this is untested)
@@ -26,6 +26,7 @@ https://github.com/user-attachments/assets/3729e3aa-14ab-4363-badc-5d658968026e
 ```
 
 ## ❓ How do I make my own custom data feed?: 
+See the most up to date [documentation](https://developers.arcgis.com/enterprise-sdk/guide/custom-data-feeds/pass-through-custom-data-providers/)
 
 ### Step 1 - NodeJS and CDF CLI Installation:
 - Install NodeJS using nvm or just manually installing the msi installer. I manually downloaded 20.11.1 windows msi from these [versions](https://nodejs.org/dist/). See this [document](https://developers.arcgis.com/enterprise-sdk/guide/custom-data-feeds/installing-and-configuring-custom-data-feeds/) for matching ArcGIS Enterprise versions. 
@@ -63,7 +64,7 @@ https://github.com/user-attachments/assets/3729e3aa-14ab-4363-badc-5d658968026e
 - TODO
 
 ## Understanding how geoservices rest API clients work at a high level: 
-I failed to understand how the interaction works between client and server with geoservices for a while and was quite confused. Hopefully this short write up will help you! The query documentation is listed [here](https://developers.arcgis.com/rest/services-reference/enterprise/query-feature-service-layer/)
+I failed to understand how the interaction works between client and server with geoservices for a while and was quite confused. Hopefully this short write up will help you! The query documentation is listed [here](https://developers.arcgis.com/rest/services-reference/enterprise/query-feature-service-layer/) and see more details [here](https://developers.arcgis.com/enterprise-sdk/guide/custom-data-feeds/pass-through-custom-data-providers/)
 - At high level first an ArcGIS/Geoservices client makes a request to your feature server example `http://127.0.0.1:8080/duckdb/rest/services/myparquet/FeatureServer/0?f=json`. This initial request is just asking for metadata and information about the data server
 - Then the client makes another initial request to something like `http://127.0.0.1:8080/duckdb/rest/services/myparquet/FeatureServer/0/query?f=json&returnIdsOnly=true&returnCountOnly=true&orderByFields=&outSR=102100&returnGeometry=false&spatialRel=esriSpatialRelIntersects&where=1%3D1` because of the `returnIdsOnly` and `returnCountOnly` fields, this request is just asking for the size of your data source.
 - Once the client knows metadata about your feature server and the size of your data source, its able to make queries with pagination as the user scrolls and pans the map 
