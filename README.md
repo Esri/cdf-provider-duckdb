@@ -3,7 +3,7 @@
 # BDT_cdf
 This repo is an exploratory effort into using custom data feeds with big data. 
 
-## 🦆 See it in action with DuckDB on he NY City Taxi parquet Dataset (1 million rows): 
+## 🦆 See it in action with DuckDB on NY City Taxi Dataset (1 million rows): 
 https://github.com/user-attachments/assets/2747d827-4365-4785-985a-7614ad55ed06
 
 ## ⚡ Quickstart
