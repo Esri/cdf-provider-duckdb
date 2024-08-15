@@ -1,6 +1,6 @@
 const wkx = require("wkx");
 
-function translate(data, config, idField) {
+function translateToGeoJSON(data, config, idField) {
 	const columns = Object.keys(data[0]);
 
 	if (!columns.includes(idField)) {
@@ -64,4 +64,6 @@ function isValidGeometry(geometry) {
 	);
 }
 
-module.exports = translate;
+module.exports = {
+	translateToGeoJSON,
+};
