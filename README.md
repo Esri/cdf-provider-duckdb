@@ -26,7 +26,7 @@ https://github.com/user-attachments/assets/2747d827-4365-4785-985a-7614ad55ed06
 ```
 
 ## ❓ How do I make my own custom data feed?: 
-See the most up to date [documentation](https://developers.arcgis.com/enterprise-sdk/guide/custom-data-feeds/pass-through-custom-data-providers/)
+See the most up to date [documentation](https://developers.arcgis.com/enterprise-sdk/guide/custom-data-feeds/pass-through-custom-data-providers/) and walkthrough [here](https://developers.arcgis.com/enterprise-sdk/guide/custom-data-feeds/create-a-yelp-custom-data-feed/)
 
 ### Step 1 - NodeJS and CDF CLI Installation:
 - Install NodeJS using nvm or just manually installing the msi installer. I manually downloaded 20.11.1 windows msi from these [versions](https://nodejs.org/dist/). See this [document](https://developers.arcgis.com/enterprise-sdk/guide/custom-data-feeds/installing-and-configuring-custom-data-feeds/) for matching ArcGIS Enterprise versions. 
@@ -38,7 +38,8 @@ See the most up to date [documentation](https://developers.arcgis.com/enterprise
 
 ### Step 3 - Create your own custom data provider for your data source:
 - To create a new custom data feed you need to make a data provider. `cd` into your new app directory and then do `cdf createprovider <customprovidername>`
-- This will add a `/providers` folder and within this there will be a folder named what you named it above 
+- This will add a `/providers` folder and within this there will be a folder named what you named it above
+- You will want to decide if your provider is a pass through provider or a full fetch provider. More info [here](https://developers.arcgis.com/enterprise-sdk/guide/custom-data-feeds/create-a-custom-data-feed-provider/) about the differences 
 - Within the provider there is a `model.js` file which handles the logic for fetching the data and returning GeoJSON 
 - For a simple example on how this works see `providers/csv` which is forked from [koop-provider-csv](https://github.com/koopjs/koop-provider-csv). The `model.js` reads from a `config/default.json` which contains metadata and information about the schema structure of the csv. It then uses [Papaparse](https://www.papaparse.com/) to read the csv and then translate it to GeoJSON (see `utils/translate-csv.js`)
 - After adding code to fetch your data from your datasource and return as GeoJSON, test the server with `npm start` which should display a list of routes in the terminal
