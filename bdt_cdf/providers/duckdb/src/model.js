@@ -1,4 +1,5 @@
 const koopConfig = require("config");
+require('dotenv').config();
 const { Database } = require("duckdb-async");
 const {
 	translateToGeoJSON,
@@ -19,24 +20,21 @@ class Model {
 			throw error;
 		}
 		this.#sourceConfig = koopConfig.duckdb.sources.datasource;
-		this.idField = "OBJECTID";
-		this.maxRecordCountPerPage = 10000;
-		this.geometryField = this.#sourceConfig.geomOutColumn;
-		this.tableName = this.#sourceConfig.properties.name;
-		this.#duckdb = initDuckDb(this.#sourceConfig, this.idField);
+		this.#duckdb = initDuckDb(this.#sourceConfig);
 
-		async function initDuckDb(sourceConfig, idField) {
-			// TODO: make sure this works with a single parquet file as well
-			// TODO: support multiple cloud providers and reading directly instead of to disk
-			await downloadFromAzure(sourceConfig.blobUrl, sourceConfig.fileName);
+		async function initDuckDb(sourceConfig) {
+			// await downloadFromAzure(sourceConfig.blobUrl, sourceConfig.fileName);
 			const db = await Database.create(":memory:");
-			await db.run(`INSTALL spatial; LOAD spatial`);
+			await db.run(`INSTALL spatial; LOAD spatial; 
+						INSTALL delta;LOAD delta;
+						INSTALL azure;LOAD azure;
+						CREATE SECRET secret1 (TYPE AZURE, CONNECTION_STRING 'az://${process.env.AZURE_CONN_STR}');`);
 			await db.run(`
         		CREATE TABLE ${sourceConfig.properties.name} AS 
         		SELECT * EXCLUDE ${sourceConfig.WKBColumn}, 
         		ST_GeomFromWKB(${sourceConfig.WKBColumn}) AS ${sourceConfig.geomOutColumn}, 
-        		CAST(row_number() OVER () AS INTEGER) AS ${idField}
-        		FROM read_parquet('${sourceConfig.fileName}/*.parquet', hive_partitioning = true)`);
+        		CAST(row_number() OVER () AS INTEGER) AS ${sourceConfig.idField}
+        		FROM read_parquet('${sourceConfig.blobUrl}', hive_partitioning = true)`);
 			console.log("DuckDB initialized");
 			return db;
 		}
@@ -46,15 +44,15 @@ class Model {
 		const { query: geoserviceParams } = req;
 		const { resultRecordCount, returnCountOnly } = // TODO: speed up returnIdsOnly with large datasets
 			geoserviceParams;
-		const fetchSize = resultRecordCount || this.maxRecordCountPerPage;
+		const fetchSize = resultRecordCount || this.#sourceConfig.maxRecordCountPerPage;
 		const db = await this.#duckdb;
 
 		try {
 			const sqlQuery = buildSqlQuery(
 				geoserviceParams,
-				this.idField,
-				this.geometryField,
-				this.tableName,
+				this.#sourceConfig.idField,
+				this.#sourceConfig.geomOutColumn,
+				this.#sourceConfig.properties.name,
 				fetchSize,
 			);
 			const rows = await db.all(sqlQuery);
@@ -66,19 +64,19 @@ class Model {
 			} else if (returnCountOnly) { 
 				geojson.count = Number(rows[0]["count(1)"]);
 			} else {
-				geojson = translateToGeoJSON(rows, this.#sourceConfig, this.idField);
+				geojson = translateToGeoJSON(rows, this.#sourceConfig);
 			}
 
 			geojson.filtersApplied = generateFiltersApplied(
 				geoserviceParams,
-				this.idField,
-				this.geometryField
+				this.#sourceConfig.idField,
+				this.#sourceConfig.geomOutColumn,
 			);
 
 			geojson.metadata = {
-				...this.#sourceConfig?.properties,
-				maxRecordCount: this.maxRecordCountPerPage,
-				idField: this.idField,
+				...this.#sourceConfig.properties,
+				maxRecordCount: this.#sourceConfig.maxRecordCountPerPage,
+				idField: this.#sourceConfig.idField,
 				//extent?
 			};
 			callback(null, geojson);

@@ -1,1 +1,3 @@
-To see full schema of required and optional args see `src/modules/validate.js`
+- To see full schema of required and optional args see `src/modules/validate.js`
+- idfield should be set to OBJECTID, duckdb will create a row number and set it to OBJECTID to work with koop
+- other id fields in your data columns can be accessed with sql where queries 
