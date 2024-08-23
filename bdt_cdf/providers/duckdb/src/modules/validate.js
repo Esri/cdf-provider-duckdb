@@ -13,8 +13,8 @@ const configSchema = {
 						datasource: {
 							type: "object",
 							properties: {
-								blobUrl: { type: "string", minLength: 1 },
-								azureStorageConnStr: { type: "string", minLength: 1 },
+								blobSASUrl: { type: "string" },
+								azureStorageConnStr: { type: "string" },
 								WKBColumn: { type: "string", minLength: 1 },
 								geomOutColumn: { type: "string", minLength: 1 },
 								idField: { type: "string", minLength: 1 },
@@ -28,7 +28,7 @@ const configSchema = {
 									required: ["name"],
 								},
 							},
-							required: ["blobUrl", "azureStorageConnStr", "WKBColumn", "geomOutColumn", "idField", "maxRecordCountPerPage", "properties"],
+							required: ["WKBColumn", "geomOutColumn", "idField", "maxRecordCountPerPage", "properties"],
 						},
 					},
 					required: ["datasource"],

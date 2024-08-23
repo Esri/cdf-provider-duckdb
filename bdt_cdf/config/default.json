@@ -20,7 +20,8 @@
     "sources": {
       "datasource": {
         "blobUrl": "az://dscatterday.blob.core.windows.net/main/fullNYTaxi.parquet/*.parquet",
-        "azureStorageConnStr": "setThisWhenDeployingToEnterpriseServer",
+        "deltaUrl": "abfss://main/hundredThousandPoints",
+        "azureStorageConnStr": "",
         "WKBColumn": "WKB",
         "geomOutColumn": "geometry",
         "idField": "OBJECTID",
