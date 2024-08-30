@@ -3,8 +3,8 @@
 # BDT_cdf
 This repo is an exploratory effort into using custom data feeds with big data. 
 
-## 🦆 See it in action with DuckDB on NY City Taxi Dataset (1 million rows): 
-https://github.com/user-attachments/assets/2747d827-4365-4785-985a-7614ad55ed06
+## 🦆 DuckDB CDF with NY city taxi dataset and H3 bins (10 million points): 
+https://github.com/user-attachments/assets/ddb26b4d-38f8-4958-8f86-78f03407621c
 
 ## ⚡ Quickstart
 - If you are wanting to use the existing providers and data feeds inside of this repo under `/bdt_cdf`, just do `npm install` (note: this is untested)
@@ -51,18 +51,44 @@ See the most up to date [documentation](https://developers.arcgis.com/enterprise
 ### Step 4 - Testing your CDF locally: 
 - To do local development on your CDF and test it you need to send GET requests to your feature server url
 - One way to do this is using something like [postman](https://www.postman.com/) or with the vs code extension [postcode](https://github.com/rohinivsenthil/postcode)
-- Postman/Postcode is nice for quick testing but there is no map component. To get a map UI, you can also use the ArcGIS JS API to create a featureLayer object in a html file. See `frontend/index.html` for an example of this 
-
-### Step 5 - Deploying a CDF to production:
-- One option is to use docker and package your server to run in the cloud as a docker container
-- Another option is to use the cdf cli that comes with the ArcGIS Enterprise SDK. Do `cdf export <providername>` which will export the code into a `.cdpk` file. 
-- Take the `.cdpk` file and upload it to ArcGIS Server using the ArcGIS Server REST Admin API upload operation see more [here](https://www.esri.com/arcgis-blog/products/arcgis-enterprise/developers/new-in-arcgis-enterprise-11-1-custom-data-feeds/)
-- A `.cdpk` is just a renamed zip file of your data provider code that is uploaded to ArcGIS Server for deployment
+- Postman/Postcode is nice for quick testing but there is no map component. To get a map UI, you can also use the ArcGIS JS API to create a featureLayer object in a html file. See `frontend/index.html` for an example of this. This is helpful as you can view the network tab in chrome developer tools to see the requests the client is sending to your CDF server
+- Another option is to add your data inside of ArcGIS Pro. You can do this by doing "Add Data" and then "Data From Path" and then use something like `http://127.0.0.1:8080/yourprovidername/rest/services/yourdatasourcename/FeatureServer`
 
 ### Step 6 - ArcGIS Server Installation: 
-- If you don't have an Enterprise server setup, you'll need a virtual machine. Here is a helpful step by step [guide](https://enterprise.arcgis.com/en/server/latest/install/windows/steps-to-get-arcgis-for-server-up-and-running.htm)
-- First install `ArcGIS_Server_Windows_113_190188.exe` from Esri internal release network drive (must be on Esri network) `\\esri.com\software\Esri\Released\113_Final`
-- TODO
+- To deploy a cdf, one option is to use docker and package your server to run in the cloud as a docker container
+- Another option is to upload your code to ArcGIS Server. To do this you use the cdf cli that comes with the ArcGIS Enterprise SDK. Do `cdf export <providername>` which will export the code into a `.cdpk` file. 
+- A `.cdpk` is just a renamed zip file of your data provider code that is uploaded to ArcGIS Server for deployment
+- Once you have the `.cdpk` file, you will need a machine running with ArcGIS server.
+- The easiest way to do this is reach out to Kevin Lam (Principal Product Engineer - klam@esri.com). There is an automated deployment system (which I believe Kevin helps manage) which makes getting an ArcGIS Enterprise machine extremely easy. The other option is to manually setup ArcGIS server, see this [guide](https://enterprise.arcgis.com/en/server/latest/install/windows/steps-to-get-arcgis-for-server-up-and-running.htm)
+- To request a VM you'll need access to VM Ware in Okta (you may have to open a service now ticket for access to this system) and you will need to create an VMWare API token.
+- Once you have an API token, go to https://psecs.esri.com/ (you may need to be on the esri VPN) to request a VM
+- Once requested you can view the build status of your VM here at http://mcsinstall1:8080/view/ECS/job/ECS_Enterprise/ (need to be on Esri VPN)
+- Once the VM is sucessfully up and running, RDP into it using the IP given to you via email
+- Once you are remoted in you will need to install the custom datafeeds runtime. This is named `ArcGIS_Custom_Data_Feeds_Windows_113_190285.exe` from Esri internal release network drive (must be on Esri network) `\\esri.com\software\Esri\Released\113_Final`. Make sure to use the correct version for your use case
+- Run this exe on the server. You are now ready to upload your .cdpk
+
+### Step 5 - Deploying a CDF to ArcGIS Server:
+- There are 3 main ways to upload a `.cdpk` to an ArcGIS Server instance. CDF CLI, ArcGIS Server admin portal, and ArcGIS Server Manager. I won't be covering the CLI method.
+- This will require you to know the base url given to you in VMWare - example `https://ps0023645.esri.com`. (for reference the homepage for my VM server was `https://ps0023645.esri.com/portal/home`)
+#### ArcGIS Server manager: 
+- Navigate to `https://yourserverurl.esri.com:6443/arcgis/manager/index.html`
+- Click `Site` on the top tab and navigate to `Custom Datafeeds`
+- Then after clicking on `Custom Datafeeds`, select `Add Custom Data provider`
+- Upload your `.cdpk` file
+- After that uploads sucessfully, navigate back to `Services` at the top. Then select `Publish Service` in the top right. Then select `From a registered custom data provider`
+- Select your cdf from the dropdown and then make sure to put whatever your data source was named (this shows up in the localhost featureserver url)
+- Set a name for your feature service and then select `Publish`
+- If everything worked, you should be able to navigate to `https://yourserverurl.esri.com/portal/home/content.html` and you should your feature server listed there in the content. Add it to a AGOL web app and see if data starts populating. If data does not show up, then see the next section on debugging deployment
+
+#### ArcGIS Server Admin Directory: 
+- You can also upload your `.cdpk` file to the ArcGIS Server Admin directory found at `https://yourserverurl.esri.com:6443/arcgis/admin/`
+- See more on how to do this [here](https://developers.arcgis.com/enterprise-sdk/guide/custom-data-feeds/register-a-custom-data-provider/)
+
+### Step 6 - Debugging a deployed CDF on ArcGIS Server: 
+- If you run into issues when deploying a CDF on your server, remote into your server instance and navigate to `C:\Program Files\ArcGIS\Server\framework\runtime\customdata\logs`. There you should be able to find log output of your CDF instance
+- If you want to make changes to your provider code (like console logging a variable for debugging purposes), navigate to `C:\Program Files\ArcGIS\Server\framework\runtime\customdata\providers` and find your code. Run notepad as admin and open the `model.js` file (or install VSCode on your server).
+- After making changes to your code and saving the file, you will need to restart ArcGIS server. To restart it, search for `Computer Management` in Windows and find `Services`. Inside of `Services` find `ArcGIS Server`, right click, and `Restart`
+- After restarting a new log file should appear in `C:\Program Files\ArcGIS\Server\framework\runtime\customdata\logs`
 
 ## Understanding how geoservices rest API clients work at a high level: 
 I failed to understand how the interaction works between client and server with geoservices for a while and was quite confused. Hopefully this short write up will help you! The query documentation is listed [here](https://developers.arcgis.com/rest/services-reference/enterprise/query-feature-service-layer/) and see more details [here](https://developers.arcgis.com/enterprise-sdk/guide/custom-data-feeds/pass-through-custom-data-providers/)
@@ -83,3 +109,8 @@ I failed to understand how the interaction works between client and server with 
 - https://github.com/koopjs/FeatureServer#featureserverroute
 - https://github.com/koopjs/geoservice-utils
 - https://developers.arcgis.com/rest/services-reference/enterprise/query-feature-service-layer/
+
+## Helpful Esri Contacts: 
+- John Hash (Production Engineer - jhash@esri.com) - helped me deploy cdfs 
+- Rich Gwozdz (Principal Software Development Engineer - rgwozdz@esri.com) - main developer of koop/cdfs
+- Shawn Goulet (Sr. Software Development Engineer - sgoulet@esri.com) - worked on a google roads cdf
