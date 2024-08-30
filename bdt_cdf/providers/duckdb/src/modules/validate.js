@@ -1,48 +1,43 @@
-const Ajv = require("ajv");
-const ajv = new Ajv();
-
-const configSchema = {
-	type: "object",
-	properties: {
-		duckdb: {
-			type: "object",
-			properties: {
-				sources: {
-					type: "object",
-					properties: {
-						datasource: {
-							type: "object",
-							properties: {
-								blobUrl: { type: "string" },
-								fileName: { type: "string" },
-								WKBColumn: { type: "string", minLength: 1 },
-								geomOutColumn: { type: "string", minLength: 1 },
-								properties: {
-									type: "object",
-									properties: {
-										name: { type: "string", minLength: 1 },
-										description: { type: "string" },
-									},
-									required: ["name"],
-								},
-							},
-							required: ["WKBColumn", "geomOutColumn", "properties"],
-						},
-					},
-					required: ["datasource"],
-				},
-			},
-			required: ["sources"],
-		},
-	},
-	required: ["duckdb"],
-};
-
 function validateConfig(config) {
-	const valid = ajv.validate(configSchema, config);
-	if (!valid) {
-		throw new Error("Invalid config: " + ajv.errorsText());
+	if (config.duckdb.sources.deltaPointsTable) {
+		var deltaPointsRequiredFields = [
+			"deltaUrl",
+			"azureStorageConnStr",
+			"WKBColumn",
+			"geomOutColumn",
+			"idField",
+			"maxRecordCountPerPage",
+			"properties",
+		];
+		const allKeysTruthy = deltaPointsRequiredFields.every(
+			(key) => config.duckdb.sources.deltaPointsTable[key]
+		);
+		if (!allKeysTruthy) {
+			throw new Error("Error with required key in default.json file");
+		}
+		return;
 	}
+
+	if (config.duckdb.sources.deltaBinsTable) {
+		var deltaBinsRequiredFields = [
+			"deltaUrl",
+			"azureStorageConnStr",
+			"WKBColumn",
+			"geomOutColumn",
+			"idField",
+			"maxRecordCountPerPage",
+			"properties",
+		];
+		const allKeysTruthy = deltaBinsRequiredFields.every(
+			(key) => config.duckdb.sources.deltaBinsTable[key]
+		);
+		if (!allKeysTruthy) {
+			throw new Error("Error with required key in default.json file");
+		}
+		return;
+	}
+
+	throw new Error("Please set a datasource in the default.json file");
 }
 
 module.exports = {

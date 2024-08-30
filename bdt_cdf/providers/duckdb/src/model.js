@@ -1,84 +1,102 @@
 const koopConfig = require("config");
-const { Database } = require("duckdb-async");
+const duckdb = require("duckdb");
 const {
 	translateToGeoJSON,
 	validateConfig,
-	downloadFromAzure,
 	buildSqlQuery,
 	generateFiltersApplied,
 } = require("./modules");
 
 class Model {
-	#duckdb;
-	#sourceConfig;
-
 	constructor(koop) {
 		try {
 			validateConfig(koopConfig);
 		} catch (error) {
 			throw error;
 		}
-		this.#sourceConfig = koopConfig.duckdb.sources.datasource;
-		this.idField = "OBJECTID";
-		this.maxRecordCountPerPage = 10000;
-		this.geometryField = this.#sourceConfig.geomOutColumn;
-		this.tableName = this.#sourceConfig.properties.name;
-		this.#duckdb = initDuckDb(this.#sourceConfig, this.idField);
+		this.db = new duckdb.Database(":memory:");
+		const deltaPointsConfig = koopConfig.duckdb.sources.deltaPointsTable;
+		const deltaBinsConfig = koopConfig.duckdb.sources.deltaBinsTable;
 
-		async function initDuckDb(sourceConfig, idField) {
-			// TODO: make sure this works with a single parquet file as well
-			// TODO: support multiple cloud providers and reading directly instead of to disk
-			await downloadFromAzure(sourceConfig.blobUrl, sourceConfig.fileName);
-			const db = await Database.create(":memory:");
-			await db.run(`INSTALL spatial; LOAD spatial`);
-			await db.run(`
-        		CREATE TABLE ${sourceConfig.properties.name} AS 
-        		SELECT * EXCLUDE ${sourceConfig.WKBColumn}, 
-        		ST_GeomFromWKB(${sourceConfig.WKBColumn}) AS ${sourceConfig.geomOutColumn}, 
-        		CAST(row_number() OVER () AS INTEGER) AS ${idField}
-        		FROM read_parquet('${sourceConfig.fileName}/*.parquet', hive_partitioning = true)`);
-			console.log("DuckDB initialized");
-			return db;
+		var deltaPointsCreateClause = ``;
+		if (deltaPointsConfig) {
+			var secretClause = `CREATE SECRET deltatableconn (TYPE AZURE, CONNECTION_STRING 'abfss://${deltaPointsConfig.azureStorageConnStr}');`;
+			deltaPointsCreateClause = `${secretClause}
+						CREATE TABLE ${deltaPointsConfig.properties.name} AS 
+						SELECT * EXCLUDE ${deltaPointsConfig.WKBColumn}, 
+						ST_GeomFromWKB(CAST(${deltaPointsConfig.WKBColumn} AS BLOB)) AS ${deltaPointsConfig.geomOutColumn}, 
+						CAST(row_number() OVER () AS INTEGER) AS ${deltaPointsConfig.idField}
+						FROM delta_scan('${deltaPointsConfig.deltaUrl}');`;
 		}
+
+		var deltaBinsCreateClause = ``;
+		if (deltaBinsConfig) {
+			var secretClause = `CREATE SECRET deltabinsconn (TYPE AZURE, CONNECTION_STRING 'abfss://${deltaBinsConfig.azureStorageConnStr}');`;
+			deltaBinsCreateClause = `${secretClause}
+						CREATE TABLE ${deltaBinsConfig.properties.name} AS 
+						SELECT * EXCLUDE ${deltaBinsConfig.WKBColumn}, 
+						ST_GeomFromWKB(CAST(${deltaBinsConfig.WKBColumn} AS BLOB)) AS ${deltaBinsConfig.geomOutColumn}, 
+						CAST(row_number() OVER () AS INTEGER) AS ${deltaBinsConfig.idField}
+						FROM delta_scan('${deltaBinsConfig.deltaUrl}');`;
+		}
+
+		const initQuery = `INSTALL spatial; LOAD spatial; 
+						INSTALL delta;LOAD delta;
+						INSTALL azure;LOAD azure;
+						${deltaPointsCreateClause};
+						${deltaBinsCreateClause};`;
+		this.db.all(initQuery, function (err, res) {
+			if (err) {
+				console.warn(err);
+				return;
+			}
+			console.log(res[0]);
+			console.log("🦆 DuckDB initialized 🦆");
+		});
 	}
 
 	async getData(req, callback) {
 		const { query: geoserviceParams } = req;
-		const { resultRecordCount, returnCountOnly } = // TODO: speed up returnIdsOnly with large datasets
+		const {
+			resultRecordCount,
+			returnCountOnly,
+		} = // TODO: speed up returnIdsOnly with large datasets
 			geoserviceParams;
-		const fetchSize = resultRecordCount || this.maxRecordCountPerPage;
-		const db = await this.#duckdb;
+		const config = koopConfig["duckdb"];
+		const sourceId = req.params.id;
+		const sourceConfig = config.sources[sourceId];
+		const fetchSize = resultRecordCount || sourceConfig.maxRecordCountPerPage;
 
 		try {
 			const sqlQuery = buildSqlQuery(
 				geoserviceParams,
-				this.idField,
-				this.geometryField,
-				this.tableName,
-				fetchSize,
+				sourceConfig.idField,
+				sourceConfig.geomOutColumn,
+				sourceConfig.properties.name,
+				fetchSize
 			);
-			const rows = await db.all(sqlQuery);
+			const rows = await queryWithCallback(this.db, sqlQuery);
 			console.log("Data size: " + rows.length);
-	
-			var geojson = {type: "FeatureCollection", features: []};
-			if (rows.length == 0) { 
+
+			var geojson = { type: "FeatureCollection", features: [] };
+			if (rows.length == 0) {
 				return callback(null, geojson);
-			} else if (returnCountOnly) { 
+			} else if (returnCountOnly) {
 				geojson.count = Number(rows[0]["count(1)"]);
 			} else {
-				geojson = translateToGeoJSON(rows, this.#sourceConfig, this.idField);
+				geojson = translateToGeoJSON(rows, sourceConfig);
 			}
 
 			geojson.filtersApplied = generateFiltersApplied(
 				geoserviceParams,
-				this.idField,
-				this.geometryField
+				sourceConfig.idField,
+				sourceConfig.geomOutColumn
 			);
 
 			geojson.metadata = {
-				...this.#sourceConfig?.properties,
-				maxRecordCount: this.maxRecordCountPerPage,
-				idField: this.idField,
+				...sourceConfig.properties,
+				maxRecordCount: sourceConfig.maxRecordCountPerPage,
+				idField: sourceConfig.idField,
 				//extent?
 			};
 			callback(null, geojson);
@@ -86,6 +104,18 @@ class Model {
 			callback(error);
 		}
 	}
+}
+
+function queryWithCallback(conn, sql) {
+	return new Promise((resolve, reject) => {
+		conn.all(sql, (err, result) => {
+			if (err) {
+				reject(err);
+			} else {
+				resolve(result);
+			}
+		});
+	});
 }
 
 module.exports = Model;

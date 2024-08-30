@@ -1,17 +1,17 @@
 const wkx = require("wkx");
 
-function translateToGeoJSON(data, config, idField) {
+function translateToGeoJSON(data, config) {
 	const columns = Object.keys(data[0]);
 
-	if (!columns.includes(idField)) {
-		console.warn(`Specified ID field "${idField}" is not found.`);
+	if (!columns.includes(config.idField)) {
+		console.warn(`Specified ID field "${config.idField}" is not found.`);
 		return null;
 	}
 
 	return {
 		type: "FeatureCollection",
 		features: data.map((row) =>
-			formatFeature(row, columns, idField, config.geomOutColumn)
+			formatFeature(row, columns, config.idField, config.geomOutColumn)
 		),
 	};
 }
