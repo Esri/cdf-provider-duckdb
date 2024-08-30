@@ -63,8 +63,8 @@ See the most up to date [documentation](https://developers.arcgis.com/enterprise
 - To request a VM you'll need access to VM Ware in Okta (you may have to open a service now ticket for access to this system) and you will need to create an VMWare API token.
 - Once you have an API token, go to https://psecs.esri.com/ (you may need to be on the esri VPN) to request a VM
 - Once requested you can view the build status of your VM here at http://mcsinstall1:8080/view/ECS/job/ECS_Enterprise/ (need to be on Esri VPN)
-- Once the VM is sucessfully up and running, RDP into it using the IP given to you via email
-- Once you are remoted in you will need to install the custom datafeeds runtime. This is named `ArcGIS_Custom_Data_Feeds_Windows_113_190285.exe` from Esri internal release network drive (must be on Esri network) `\\esri.com\software\Esri\Released\113_Final`. Make sure to use the correct version for your use case
+- Once the VM is successfully up and running, RDP into it using the IP given to you via email
+- Once you remote in you will need to install the custom datafeeds runtime. This is named `ArcGIS_Custom_Data_Feeds_Windows_113_190285.exe` from Esri internal release network drive (must be on Esri network) `\\esri.com\software\Esri\Released\113_Final`. Make sure to use the correct version for your use case
 - Run this exe on the server. You are now ready to upload your .cdpk
 
 ### Step 5 - Deploying a CDF to ArcGIS Server:
@@ -75,7 +75,7 @@ See the most up to date [documentation](https://developers.arcgis.com/enterprise
 - Click `Site` on the top tab and navigate to `Custom Datafeeds`
 - Then after clicking on `Custom Datafeeds`, select `Add Custom Data provider`
 - Upload your `.cdpk` file
-- After that uploads sucessfully, navigate back to `Services` at the top. Then select `Publish Service` in the top right. Then select `From a registered custom data provider`
+- After that uploads successfully, navigate back to `Services` at the top. Then select `Publish Service` in the top right. Then select `From a registered custom data provider`
 - Select your cdf from the dropdown and then make sure to put whatever your data source was named (this shows up in the localhost featureserver url)
 - Set a name for your feature service and then select `Publish`
 - If everything worked, you should be able to navigate to `https://yourserverurl.esri.com/portal/home/content.html` and you should your feature server listed there in the content. Add it to a AGOL web app and see if data starts populating. If data does not show up, then see the next section on debugging deployment
