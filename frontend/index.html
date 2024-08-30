@@ -38,20 +38,8 @@
         });
 
         const featureLayer = new FeatureLayer({
-          //url: "https://services.arcgis.com/V6ZHFr6zdgNZuVG0/arcgis/rest/services/Landscape_Trees/FeatureServer/0"
-          //url: "http://127.0.0.1:8080/parquet/rest/services/:host/my-parquet/FeatureServer/0"
-         // url: "http://127.0.0.1:8080/parquet-azure/rest/services/my-parquet/FeatureServer/0"
-          url: "http://127.0.0.1:8080/duckdb/rest/services/myparquet/FeatureServer/0"
-          // url: "http://localhost:8080/parquet-azure/rest/services/my-parquet/FeatureServer/0/query?geometry={xmin:-73.993607,ymin:40.773535,xmax:-73.973780,ymax:40.779488,spatialReference:{wkid:4326}}"
-          //url: "http://127.0.0.1:8080/csv/rest/services/:host/my-csv/FeatureServer/0"
+          url: "http://127.0.0.1:8080/duckdb/rest/services/deltaPointsTable/FeatureServer/0"
         });
-
-        // featureLayer.when(() => {
-        //   return featureLayer.queryExtent();
-        // })
-        // .then((response) => {
-        //   view.goTo(response.extent);
-        // });
 
         map.add(featureLayer);
        

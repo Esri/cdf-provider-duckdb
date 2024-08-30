@@ -1,9 +1,8 @@
 {
 	"duckdb": {
 		"sources": {
-			"datasource": {
-				"blobUrl": "az://dscatterday.blob.core.windows.net/main/fullNYTaxi.parquet/*.parquet",
-				"deltaUrl": "abfss://main/hundredThousandPoints",
+			"deltaPointsTable": {
+				"deltaUrl": "abfss://main/deltaNYTaxi",
 				"azureStorageConnStr": "",
 				"WKBColumn": "WKB",
 				"geomOutColumn": "geometry",
@@ -12,6 +11,18 @@
 				"properties": {
 					"name": "fullNYTaxi",
 					"description": "ten million NY Taxi points"
+				}
+			},
+			"deltaBinsTable": {
+				"deltaUrl": "abfss://main/deltaNYTaxi_Bins",
+				"azureStorageConnStr": "",
+				"WKBColumn": "WKB",
+				"geomOutColumn": "geometry",
+				"idField": "OBJECTID",
+				"maxRecordCountPerPage": 10000,
+				"properties": {
+					"name": "NYTaxiBins",
+					"description": "hex bins of ten million NY Taxi points"
 				}
 			}
 		}

@@ -26,3 +26,6 @@ logs
 
 # ignore data files 
 *.parquet
+
+# ignore cdpk files for deployment 
+*.cdpk

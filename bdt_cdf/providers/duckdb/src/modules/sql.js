@@ -6,7 +6,7 @@ function buildSqlQuery(
 	idField,
 	geometryField,
 	tableName,
-	fetchSize,
+	fetchSize
 ) {
 	const {
 		where,
@@ -23,8 +23,7 @@ function buildSqlQuery(
 
 	// only return back one row for metadata purposes
 	var isMetadataRequest =
-	Object.keys(geoParams).length == 1 &&
-	geoParams.hasOwnProperty("f");
+		Object.keys(geoParams).length == 1 && geoParams.hasOwnProperty("f");
 
 	if (isMetadataRequest) {
 		fetchSize = 1;
@@ -33,12 +32,17 @@ function buildSqlQuery(
 	let selectClause = "";
 	if (returnCountOnly) {
 		selectClause = "COUNT(1)";
-	}else if (returnIdsOnly) {
+	} else if (returnIdsOnly) {
 		selectClause = `${idField}`;
 	} else if (outFields === "*") {
 		selectClause = `${outFields} EXCLUDE ${geometryField}, ST_AsWKB(${geometryField}) AS ${geometryField}`;
 	} else {
-		selectClause = `${outFields}, ST_AsWKB(${geometryField}) AS ${geometryField}`;
+		var outputFields = outFields;
+		if (!outFields.includes(idField)) {
+			// Koop needs OBJECTID field in geojson
+			outputFields = outFields.concat(`, ${idField}`);
+		}
+		selectClause = `${outputFields}, ST_AsWKB(${geometryField}) AS ${geometryField}`;
 	}
 
 	const from = ` FROM ${tableName}`;
@@ -55,8 +59,7 @@ function buildSqlQuery(
 
 	const orderByClause = orderByFields ? ` ORDER BY ${orderByFields}` : "";
 
-	const limitClause =
-		fetchSize && !returnIdsOnly ? ` LIMIT ${fetchSize}` : "";
+	const limitClause = fetchSize && !returnIdsOnly ? ` LIMIT ${fetchSize}` : "";
 
 	const offsetClause =
 		resultOffset && !returnIdsOnly ? ` OFFSET ${resultOffset}` : "";

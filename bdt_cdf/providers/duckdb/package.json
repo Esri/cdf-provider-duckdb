@@ -8,12 +8,9 @@
     "start": "node src/index.js"
   },
   "dependencies": {
-    "@azure/storage-blob": "^12.24.0",
     "@koopjs/geoservice-utils": "^3.0.1",
-    "ajv": "^8.17.1",
     "config": "^3.2.5",
-    "dotenv": "^16.4.5",
-    "duckdb-async": "^1.0.0",
+    "duckdb": "^1.0.0",
     "wkx": "^0.5.0"
   },
   "devDependencies": {
