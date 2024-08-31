@@ -54,7 +54,7 @@ See the most up to date [documentation](https://developers.arcgis.com/enterprise
 - Postman/Postcode is nice for quick testing but there is no map component. To get a map UI, you can also use the ArcGIS JS API to create a featureLayer object in a html file. See `frontend/index.html` for an example of this. This is helpful as you can view the network tab in chrome developer tools to see the requests the client is sending to your CDF server
 - Another option is to add your data inside of ArcGIS Pro. You can do this by doing "Add Data" and then "Data From Path" and then use something like `http://127.0.0.1:8080/yourprovidername/rest/services/yourdatasourcename/FeatureServer`
 
-### Step 6 - ArcGIS Server Installation: 
+### Step 5 - ArcGIS Server Installation: 
 - To deploy a cdf, one option is to use docker and package your server to run in the cloud as a docker container
 - Another option is to upload your code to ArcGIS Server. To do this you use the cdf cli that comes with the ArcGIS Enterprise SDK. Do `cdf export <providername>` which will export the code into a `.cdpk` file. 
 - A `.cdpk` is just a renamed zip file of your data provider code that is uploaded to ArcGIS Server for deployment
@@ -67,7 +67,7 @@ See the most up to date [documentation](https://developers.arcgis.com/enterprise
 - Once you remote in you will need to install the custom datafeeds runtime. This is named `ArcGIS_Custom_Data_Feeds_Windows_113_190285.exe` from Esri internal release network drive (must be on Esri network) `\\esri.com\software\Esri\Released\113_Final`. Make sure to use the correct version for your use case
 - Run this exe on the server. You are now ready to upload your .cdpk
 
-### Step 5 - Deploying a CDF to ArcGIS Server:
+### Step 6 - Deploying a CDF to ArcGIS Server:
 - There are 3 main ways to upload a `.cdpk` to an ArcGIS Server instance. CDF CLI, ArcGIS Server admin portal, and ArcGIS Server Manager. I won't be covering the CLI method.
 - This will require you to know the base url given to you in VMWare - example `https://ps0023645.esri.com`. (for reference the homepage for my VM server was `https://ps0023645.esri.com/portal/home`)
 #### ArcGIS Server manager: 
@@ -84,7 +84,7 @@ See the most up to date [documentation](https://developers.arcgis.com/enterprise
 - You can also upload your `.cdpk` file to the ArcGIS Server Admin directory found at `https://yourserverurl.esri.com:6443/arcgis/admin/`
 - See more on how to do this [here](https://developers.arcgis.com/enterprise-sdk/guide/custom-data-feeds/register-a-custom-data-provider/)
 
-### Step 6 - Debugging a deployed CDF on ArcGIS Server: 
+### Step 7 - Debugging a deployed CDF on ArcGIS Server: 
 - If you run into issues when deploying a CDF on your server, remote into your server instance and navigate to `C:\Program Files\ArcGIS\Server\framework\runtime\customdata\logs`. There you should be able to find log output of your CDF instance
 - If you want to make changes to your provider code (like console logging a variable for debugging purposes), navigate to `C:\Program Files\ArcGIS\Server\framework\runtime\customdata\providers` and find your code. Run notepad as admin and open the `model.js` file (or install VSCode on your server).
 - After making changes to your code and saving the file, you will need to restart ArcGIS server. To restart it, search for `Computer Management` in Windows and find `Services`. Inside of `Services` find `ArcGIS Server`, right click, and `Restart`
