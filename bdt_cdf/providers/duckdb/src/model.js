@@ -1,5 +1,4 @@
 const koopConfig = require("config");
-dfsconfig = readfs(dfspath);
 const duckdb = require("duckdb");
 const {
 	translateToGeoJSON,
@@ -30,14 +29,6 @@ class Model {
 								SET s3_access_key_id='${minioConfig.s3AccessKeyId}';
 								SET s3_secret_access_key='${minioConfig.s3Secret}';
 								SET s3_use_ssl = false;`;
-			// var secretClause = `CREATE SECRET secret1 (
-			// 						TYPE S3,
-			// 						KEY_ID '${minioConfig.s3AccessKeyId}',
-			// 						SECRET '${minioConfig.s3Secret}',
-			// 						REGION '${minioConfig.s3Region}',
-			// 						ENDPOINT '${minioConfig.s3Url}',
-			// 						USE_SSL false
-			// 					);`
 			minioCreateClause = `${secretClause}
 						CREATE TABLE ${minioConfig.properties.name} AS 
 						SELECT * EXCLUDE ${minioConfig.WKBColumn}, 
