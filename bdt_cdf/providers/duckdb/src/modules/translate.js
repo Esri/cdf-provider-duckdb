@@ -5,7 +5,7 @@ function translateToGeoJSON(data, config) {
 
 	if (!columns.includes(config.idField)) {
 		console.warn(`Specified ID field "${config.idField}" is not found.`);
-		return null;
+		//return null;
 	}
 
 	return {
@@ -40,12 +40,12 @@ function formatFeature(values, columns, idField, geometryField) {
 		}
 	}
 
-	if (!isValidGeometry(feature.geometry)) {
-		// console.warn(
-		// 	`Invalid coordinates: ${feature.geometry.coordinates}, setting to [0, 0]`
-		// );
-		feature.geometry.coordinates = [0, 0];
-	}
+	// if (!isValidGeometry(feature.geometry)) {
+	// 	// console.warn(
+	// 	// 	`Invalid coordinates: ${feature.geometry.coordinates}, setting to [0, 0]`
+	// 	// );
+	// 	feature.geometry.coordinates = [0, 0];
+	// }
 
 	return feature;
 }

@@ -19,6 +19,8 @@ function buildSqlQuery(
 		spatialRel,
 		returnIdsOnly,
 		returnCountOnly,
+		returnDistinctValues,
+		returnGeometry,
 	} = geoParams;
 
 	// only return back one row for metadata purposes
@@ -34,6 +36,8 @@ function buildSqlQuery(
 		selectClause = "COUNT(1)";
 	} else if (returnIdsOnly) {
 		selectClause = `${idField}`;
+	} else if (returnDistinctValues && !returnGeometry) {
+		selectClause = `${outFields}`;
 	} else if (outFields === "*") {
 		selectClause = `${outFields} EXCLUDE ${geometryField}, ST_AsWKB(${geometryField}) AS ${geometryField}`;
 	} else {
@@ -59,12 +63,14 @@ function buildSqlQuery(
 
 	const orderByClause = orderByFields ? ` ORDER BY ${orderByFields}` : "";
 
-	const limitClause = fetchSize && !returnIdsOnly ? ` LIMIT ${fetchSize}` : "";
+	const distinctClause = returnDistinctValues ? `DISTINCT` : "";
+
+	const limitClause = fetchSize && !returnIdsOnly && !returnDistinctValues ? ` LIMIT ${fetchSize}` : "";
 
 	const offsetClause =
 		resultOffset && !returnIdsOnly ? ` OFFSET ${resultOffset}` : "";
 
-	return `SELECT ${selectClause}${from}${whereClause}${orderByClause}${limitClause}${offsetClause}`;
+	return `SELECT ${distinctClause} ${selectClause}${from}${whereClause}${orderByClause}${limitClause}${offsetClause}`;
 }
 
 function buildSqlWhere({
