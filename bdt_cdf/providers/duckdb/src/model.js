@@ -19,6 +19,7 @@ class Model {
 		const deltaBinsConfig = koopConfig.duckdb.sources.deltaBinsTable;
 
 		var deltaPointsCreateClause = ``;
+		// s3 heres
 		if (deltaPointsConfig) {
 			var secretClause = `CREATE SECRET deltatableconn (TYPE AZURE, CONNECTION_STRING 'abfss://${deltaPointsConfig.azureStorageConnStr}');`;
 			deltaPointsCreateClause = `${secretClause}
