@@ -56,10 +56,17 @@ class Model {
 	}
 
 	async getData(req, callback) {
-		const { query: geoserviceParams } = req;
+		// convert bools from strings 
+		Object.keys(req.query).forEach(key => {
+			if(req.query[key]+''.toLowerCase() === 'true') req.query[key] = true;
+			else if(req.query[key]+''.toLowerCase() === 'false') req.query[key] = false;
+		});
+		const {query: geoserviceParams} = req;
 		const {
 			resultRecordCount,
-			returnCountOnly,
+			returnCountOnly, 
+			returnDistinctValues, 
+			returnGeometry
 		} = // TODO: speed up returnIdsOnly with large datasets
 			geoserviceParams;
 		const config = koopConfig["duckdb"];
@@ -87,11 +94,13 @@ class Model {
 				geojson = translateToGeoJSON(rows, sourceConfig);
 			}
 
-			geojson.filtersApplied = generateFiltersApplied(
-				geoserviceParams,
-				sourceConfig.idField,
-				sourceConfig.geomOutColumn
-			);
+			if (!returnDistinctValues) {
+				geojson.filtersApplied = generateFiltersApplied(
+					geoserviceParams,
+					sourceConfig.idField,
+					sourceConfig.geomOutColumn
+				);
+			}
 
 			geojson.metadata = {
 				...sourceConfig.properties,

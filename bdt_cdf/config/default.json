@@ -20,7 +20,7 @@
     "sources": {
       "deltaPointsTable": {
         "deltaUrl": "abfss://main/deltaNYTaxi",
-        "azureStorageConnStr": "",
+        "azureStorageConnStr": "DefaultEndpointsProtocol=https;AccountName=dscatterday;AccountKey=OzMd9bxEyaplZztkSja5aocN2qRkkpgGqDeM0YJBaT4zsE8yyXdlO895mJBrHRxwfr5zS3dYowSaOAxr360rsg==;EndpointSuffix=core.windows.net",
         "WKBColumn": "WKB",
         "geomOutColumn": "geometry",
         "idField": "OBJECTID",
@@ -32,7 +32,7 @@
       },
       "deltaBinsTable": {
         "deltaUrl": "abfss://main/deltaNYTaxi_Bins",
-        "azureStorageConnStr": "",
+        "azureStorageConnStr": "DefaultEndpointsProtocol=https;AccountName=dscatterday;AccountKey=OzMd9bxEyaplZztkSja5aocN2qRkkpgGqDeM0YJBaT4zsE8yyXdlO895mJBrHRxwfr5zS3dYowSaOAxr360rsg==;EndpointSuffix=core.windows.net",
         "WKBColumn": "WKB",
         "geomOutColumn": "geometry",
         "idField": "OBJECTID",
@@ -40,35 +40,6 @@
         "properties": {
           "name": "NYTaxiBins",
           "description": "hex bins of ten million NY Taxi points"
-        }
-      }
-    }
-  },
-  "provider-parquet": {
-    "sources": {
-      "my-parquet": {
-        "path": "C:\\Users\\dre11620\\Downloads\\BDT_cdf\\bdt_cdf\\data\\USPoints.parquet",
-        "metadata": {
-          "name": "USPoints",
-          "description": "random US points",
-          "idField": ""
-        },
-        "WKBColumns": [
-          "WKB"
-        ]
-      }
-    }
-  },
-  "provider-parquet-azure": {
-    "sources": {
-      "my-parquet": {
-        "blobUrl": "https://dscatterday.blob.core.windows.net/main?sp=rl&st=2024-07-24T20:28:51Z&se=2025-07-25T04:28:51Z&spr=https&sv=2022-11-02&sr=c&sig=xGSz5EKkeqlAgIhQLph5w2g8hibR0bKCDGH7r%2B2Cb94%3D",
-        "fileName": "smallNYTaxi.parquet",
-        "WKBColumn": "WKB",
-        "properties": {
-          "name": "smallNYTaxi",
-          "description": "one million NY Taxi points",
-          "idField": "VendorID"
         }
       }
     }
