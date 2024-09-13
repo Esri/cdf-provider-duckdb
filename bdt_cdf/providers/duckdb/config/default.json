@@ -3,7 +3,7 @@
 		"sources": {
 			"deltaPointsTable": {
 				"deltaUrl": "abfss://main/deltaNYTaxi",
-				"azureStorageConnStr": "DefaultEndpointsProtocol=https;AccountName=dscatterday;AccountKey=OzMd9bxEyaplZztkSja5aocN2qRkkpgGqDeM0YJBaT4zsE8yyXdlO895mJBrHRxwfr5zS3dYowSaOAxr360rsg==;EndpointSuffix=core.windows.net",
+				"azureStorageConnStr": "",
 				"WKBColumn": "WKB",
 				"geomOutColumn": "geometry",
 				"idField": "OBJECTID",
@@ -15,7 +15,7 @@
 			},
 			"deltaBinsTable": {
 				"deltaUrl": "abfss://main/deltaNYTaxi_Bins",
-				"azureStorageConnStr": "DefaultEndpointsProtocol=https;AccountName=dscatterday;AccountKey=OzMd9bxEyaplZztkSja5aocN2qRkkpgGqDeM0YJBaT4zsE8yyXdlO895mJBrHRxwfr5zS3dYowSaOAxr360rsg==;EndpointSuffix=core.windows.net",
+				"azureStorageConnStr": "",
 				"WKBColumn": "WKB",
 				"geomOutColumn": "geometry",
 				"idField": "OBJECTID",
