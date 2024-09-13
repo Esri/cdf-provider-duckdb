@@ -37,6 +37,11 @@ function validateConfig(config) {
 		return;
 	}
 
+	if (config.duckdb.sources.minio) {
+		//TODO
+		return;
+	}
+
 	throw new Error("Please set a datasource in the default.json file");
 }
 

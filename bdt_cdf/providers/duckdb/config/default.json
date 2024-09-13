@@ -1,9 +1,12 @@
 {
 	"duckdb": {
 		"sources": {
-			"deltaPointsTable": {
-				"deltaUrl": "abfss://main/deltaNYTaxi",
-				"azureStorageConnStr": "",
+			"minio": {
+				"s3Url": "127.0.0.1:9000",
+				"s3Region": "us-east-1",
+				"s3AccessKeyId": "minioadmin",
+				"s3Secret": "minioadmin",
+				"s3BucketName": "plswork",
 				"WKBColumn": "WKB",
 				"geomOutColumn": "geometry",
 				"idField": "OBJECTID",
@@ -11,18 +14,6 @@
 				"properties": {
 					"name": "fullNYTaxi",
 					"description": "ten million NY Taxi points"
-				}
-			},
-			"deltaBinsTable": {
-				"deltaUrl": "abfss://main/deltaNYTaxi_Bins",
-				"azureStorageConnStr": "",
-				"WKBColumn": "WKB",
-				"geomOutColumn": "geometry",
-				"idField": "OBJECTID",
-				"maxRecordCountPerPage": 10000,
-				"properties": {
-					"name": "NYTaxiBins",
-					"description": "hex bins of ten million NY Taxi points"
 				}
 			}
 		}

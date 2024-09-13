@@ -1,4 +1,5 @@
 const koopConfig = require("config");
+dfsconfig = readfs(dfspath);
 const duckdb = require("duckdb");
 const {
 	translateToGeoJSON,
@@ -17,9 +18,35 @@ class Model {
 		this.db = new duckdb.Database(":memory:");
 		const deltaPointsConfig = koopConfig.duckdb.sources.deltaPointsTable;
 		const deltaBinsConfig = koopConfig.duckdb.sources.deltaBinsTable;
+		const minioConfig = koopConfig.duckdb.sources.minio;
+
+		var minioCreateClause = ``;
+		if (minioConfig) {
+			var secretClause = `INSTALL 'httpfs';
+								LOAD 'httpfs';
+								SET s3_region='${minioConfig.s3Region}';
+								SET s3_url_style='path';
+								SET s3_endpoint='${minioConfig.s3Url}';
+								SET s3_access_key_id='${minioConfig.s3AccessKeyId}';
+								SET s3_secret_access_key='${minioConfig.s3Secret}';
+								SET s3_use_ssl = false;`;
+			// var secretClause = `CREATE SECRET secret1 (
+			// 						TYPE S3,
+			// 						KEY_ID '${minioConfig.s3AccessKeyId}',
+			// 						SECRET '${minioConfig.s3Secret}',
+			// 						REGION '${minioConfig.s3Region}',
+			// 						ENDPOINT '${minioConfig.s3Url}',
+			// 						USE_SSL false
+			// 					);`
+			minioCreateClause = `${secretClause}
+						CREATE TABLE ${minioConfig.properties.name} AS 
+						SELECT * EXCLUDE ${minioConfig.WKBColumn}, 
+						ST_GeomFromWKB(CAST(${minioConfig.WKBColumn} AS BLOB)) AS ${minioConfig.geomOutColumn}, 
+						CAST(row_number() OVER () AS INTEGER) AS ${minioConfig.idField}
+						FROM read_parquet('s3://${minioConfig.s3BucketName}/${minioConfig.properties.name}.parquet/*.parquet', hive_partitioning = true);`;
+		}
 
 		var deltaPointsCreateClause = ``;
-		// s3 heres
 		if (deltaPointsConfig) {
 			var secretClause = `CREATE SECRET deltatableconn (TYPE AZURE, CONNECTION_STRING 'abfss://${deltaPointsConfig.azureStorageConnStr}');`;
 			deltaPointsCreateClause = `${secretClause}
@@ -45,7 +72,9 @@ class Model {
 						INSTALL delta;LOAD delta;
 						INSTALL azure;LOAD azure;
 						${deltaPointsCreateClause};
-						${deltaBinsCreateClause};`;
+						${deltaBinsCreateClause};
+						${minioCreateClause};`;
+		console.log(initQuery);
 		this.db.all(initQuery, function (err, res) {
 			if (err) {
 				console.warn(err);
