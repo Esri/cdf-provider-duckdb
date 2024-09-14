@@ -65,7 +65,6 @@ class Model {
 						${deltaPointsCreateClause};
 						${deltaBinsCreateClause};
 						${minioCreateClause};`;
-		console.log(initQuery);
 		this.db.all(initQuery, function (err, res) {
 			if (err) {
 				console.warn(err);

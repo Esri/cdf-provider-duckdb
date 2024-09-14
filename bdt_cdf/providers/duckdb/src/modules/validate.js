@@ -38,7 +38,24 @@ function validateConfig(config) {
 	}
 
 	if (config.duckdb.sources.minio) {
-		//TODO
+		var minioRequiredFields = [
+			"s3Url",
+			"s3Region",
+			"s3AccessKeyId",
+			"s3Secret",
+			"s3BucketName",
+			"WKBColumn",
+			"geomOutColumn",
+			"idField",
+			"maxRecordCountPerPage",
+			"properties"
+		];
+		const allKeysTruthy = minioRequiredFields.every(
+			(key) => config.duckdb.sources.minio[key]
+		);
+		if (!allKeysTruthy) {
+			throw new Error("Error with required key in default.json file");
+		}
 		return;
 	}
 
