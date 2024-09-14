@@ -1,20 +1,8 @@
 {
 	"duckdb": {
 		"sources": {
-			"minio": {
-				"s3Url": "127.0.0.1:9000",
-				"s3Region": "us-east-1",
-				"s3AccessKeyId": "minioadmin",
-				"s3Secret": "minioadmin",
-				"s3BucketName": "plswork",
-				"WKBColumn": "WKB",
-				"geomOutColumn": "geometry",
-				"idField": "OBJECTID",
-				"maxRecordCountPerPage": 10000,
-				"properties": {
-					"name": "fullNYTaxi",
-					"description": "ten million NY Taxi points"
-				}
+			"localParquet": {
+				"dfsConfigPath": "./providers/duckdb/config/DFSconfig.json"
 			}
 		}
 	}

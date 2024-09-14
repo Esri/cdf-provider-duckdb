@@ -1,0 +1,13 @@
+{
+    "activeParquetFile": {
+        "path": "./data/smallNYTaxi.parquet",
+        "WKBColumn": "WKB",
+        "geomOutColumn": "geometry",
+        "idField": "OBJECTID",
+        "maxRecordCountPerPage": 10000,
+        "properties": {
+            "name": "smallNYTaxi",
+            "description": "one million NY Taxi points"
+        }
+    }
+}

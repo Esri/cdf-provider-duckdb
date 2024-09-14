@@ -59,6 +59,11 @@ function validateConfig(config) {
 		return;
 	}
 
+	if (config.duckdb.sources.localParquet) {
+		// TODO: add schema validation here
+		return;
+	}
+
 	throw new Error("Please set a datasource in the default.json file");
 }
 

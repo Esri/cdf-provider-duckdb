@@ -1,5 +1,6 @@
 const koopConfig = require("config");
 const duckdb = require("duckdb");
+const fs = require('fs');
 const {
 	translateToGeoJSON,
 	validateConfig,
@@ -18,6 +19,22 @@ class Model {
 		const deltaPointsConfig = koopConfig.duckdb.sources.deltaPointsTable;
 		const deltaBinsConfig = koopConfig.duckdb.sources.deltaBinsTable;
 		const minioConfig = koopConfig.duckdb.sources.minio;
+		const localParquetConfig = koopConfig.duckdb.sources.localParquet;
+
+		var localParquetCreateClause = ``;
+		if (localParquetConfig) {
+			try {
+				const data = fs.readFileSync(localParquetConfig.dfsConfigPath);
+				this.DFSConfig = JSON.parse(data).activeParquetFile;
+			  } catch (err) {
+				console.error("Error reading DFS config file:", err);
+			}
+			localParquetCreateClause = `CREATE TABLE ${this.DFSConfig.properties.name} AS 
+						SELECT * EXCLUDE ${this.DFSConfig.WKBColumn}, 
+						ST_GeomFromWKB(CAST(${this.DFSConfig.WKBColumn} AS BLOB)) AS ${this.DFSConfig.geomOutColumn}, 
+						CAST(row_number() OVER () AS INTEGER) AS ${this.DFSConfig.idField}
+						FROM read_parquet('${this.DFSConfig.path}/*.parquet', hive_partitioning = true);`;
+		}
 
 		var minioCreateClause = ``;
 		if (minioConfig) {
@@ -64,7 +81,8 @@ class Model {
 						INSTALL azure;LOAD azure;
 						${deltaPointsCreateClause};
 						${deltaBinsCreateClause};
-						${minioCreateClause};`;
+						${minioCreateClause};
+						${localParquetCreateClause};`;
 		this.db.all(initQuery, function (err, res) {
 			if (err) {
 				console.warn(err);
@@ -91,7 +109,7 @@ class Model {
 			geoserviceParams;
 		const config = koopConfig["duckdb"];
 		const sourceId = req.params.id;
-		const sourceConfig = config.sources[sourceId];
+		const sourceConfig = sourceId == "localParquet" ? this.DFSConfig : config.sources[sourceId];
 		const fetchSize = resultRecordCount || sourceConfig.maxRecordCountPerPage;
 
 		try {
