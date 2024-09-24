@@ -8,11 +8,10 @@
 - Once the CDF cli is installed from the Enterprise SDK, do `cdf createapp <app_name>` which will generate a bunch of nodeJS boilerplate for you. A custom datafeed is built on top of [Koop](https://koopjs.github.io/docs) which is built with [express.js](https://expressjs.com/)
 
 ### Step 3 - Using the custom data providers in this repo: 
-- If you want to use the providers in this repo, git clone this repo into a seperate folder
 - If you want to create your own custom provider, skip to step 4. 
-- Create a `/providers` folder in your project folder, full example: `<app_name>/providers`
-- Copy over the desired provider folder from this repo to your providers folder
-- After copying, you will need to cd into each provider folder and do `npm install`
+- If you want to use the providers in this repo, git clone this repo into your project folder `<app_name>/`
+- Upon cloning it should add a `/providers` folder 
+- After cloning, you will need to cd into each provider folder and do `npm install`
 - After all dependencies are installed for each provider, cd back to the base directory of `<app_name>` and run the app with `npm start` which should display routes in your terminal
 
 ### Step 4 - Create your own custom data provider for your data source:
