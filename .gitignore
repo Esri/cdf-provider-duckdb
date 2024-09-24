@@ -27,6 +27,9 @@ logs
 # ignore cdpk files for deployment 
 *.cdpk
 
+# ignore large tmp duckdb files
+.tmp
+
 # ignore boiler plate from koop 
 /config 
 /data

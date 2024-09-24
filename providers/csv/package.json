@@ -8,7 +8,8 @@
     "start": "node src/index.js"
   },
   "dependencies": {
-    "config": "^3.2.5"
+    "config": "^3.2.5",
+    "papaparse": "^5.4.1"
   },
   "devDependencies": {
     "chai": "^4.2.0",
