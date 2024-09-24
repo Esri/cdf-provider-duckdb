@@ -9,7 +9,7 @@
 
 ### Step 3 - Using the custom data providers in this repo: 
 - If you want to create your own custom provider, skip to step 4. 
-- If you want to use the providers in this repo, git clone this repo into your project folder `<app_name>/`
+- If you want to use the providers in this repo, do `git clone https://github.com/EsriPS/BDT_cdf.git .` into your project folder `<app_name>/`
 - Upon cloning it should add a `/providers` folder 
 - After cloning, you will need to cd into each provider folder and do `npm install`
 - After all dependencies are installed for each provider, cd back to the base directory of `<app_name>` and run the app with `npm start` which should display routes in your terminal
