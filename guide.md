@@ -8,11 +8,15 @@
 - Once the CDF cli is installed from the Enterprise SDK, do `cdf createapp <app_name>` which will generate a bunch of nodeJS boilerplate for you. A custom datafeed is built on top of [Koop](https://koopjs.github.io/docs) which is built with [express.js](https://expressjs.com/)
 
 ### Step 3 - Using the custom data providers in this repo: 
-- If you want to create your own custom provider, skip to step 4. 
-- If you want to use the providers in this repo, do `git clone https://github.com/EsriPS/BDT_cdf.git .` into your project folder `<app_name>/`
-- Upon cloning it should add a `/providers` folder 
+- If you want to create your own custom provider, skip to step 4.
+- cd into your project folder `<app_name>/`
+- Inside of your project folder run the following command (⚠️ this may overwrite your providers folder so only do this if you just created a fresh app with `cdf createapp <app_name>`): 
+`git init && git remote add origin https://github.com/EsriPS/BDT_cdf && git pull origin master && git branch --set-upstream-to=origin/master master`
+- A simple `git clone` won't work because git clone assumes you are copying into an empty directory location. Alternatively, you can `git clone` to a seperate empty folder and then manually copy over the desired provider folders to your project. 
+- Upon cloning it should add a `/providers` folder and a few other files/folders
 - After cloning, you will need to cd into each provider folder and do `npm install`
 - After all dependencies are installed for each provider, cd back to the base directory of `<app_name>` and run the app with `npm start` which should display routes in your terminal
+- If you want to stay up to date with the latest changes of the providers in this repo you can do `git pull` 
 
 ### Step 4 - Create your own custom data provider for your data source:
 - To create a new custom data feed you need to make a data provider. `cd` into your new app directory and then do `cdf createprovider <customprovidername>`
