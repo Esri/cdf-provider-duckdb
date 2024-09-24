@@ -1,0 +1,18 @@
+{
+    "koop-provider-csv": {
+      "sources": {
+        "my-csv": {
+          "path": "C:\\Users\\dre11620\\Downloads\\BDT_cdf\\bdt_cdf\\data\\cities.csv",
+          "metadata": {
+            "name": "CitiesData",
+            "description": "points of cities",
+            "idField": "id"
+          },
+          "geometryColumns": {
+            "latitude": "latitude",
+            "longitude": "longitude"
+          }
+        }
+      }
+    }
+  }

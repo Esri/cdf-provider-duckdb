@@ -1,0 +1,9 @@
+{
+	"duckdb": {
+		"sources": {
+			"localParquet": {
+				"dfsConfigPath": "./providers/duckdb/config/DFSconfig.json"
+			}
+		}
+	}
+}

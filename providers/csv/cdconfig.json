@@ -1,0 +1,12 @@
+{
+  "name": "csv",
+  "arcgisVersion": "11.3.0",
+  "parentServiceType": "FeatureServer",
+  "customdataRuntimeVersion": "1",
+  "type": "provider",
+  "properties": {
+    "hosts": true,
+    "disableIdParam": false
+  },
+  "fileName": "csv.cdpk"
+}
