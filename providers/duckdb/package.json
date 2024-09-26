@@ -8,7 +8,6 @@
     "start": "node src/index.js"
   },
   "dependencies": {
-    "@koopjs/geoservice-utils": "^3.0.1",
     "config": "^3.2.5",
     "duckdb": "^1.1.0"
   },
