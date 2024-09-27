@@ -3,8 +3,8 @@ const { arcgisToGeoJSON } = require("./terraformer");
 function getGeometryQuery(
 	geometry,
 	geometryField,
-	inSR,
-	spatialRel,
+	inSR = 4326,
+	spatialRel = "esriSpatialRelIntersects",
 	reprojectionSR = 4326
 ) {
 	if (typeof inSR === "string") {
@@ -24,10 +24,9 @@ function getGeometryQuery(
 	if (inSR != reprojectionSR) {
 		geometryFilter = `ST_TRANSFORM(${geometryFilter},'EPSG:${inSR}','EPSG:${reprojectionSR}',TRUE)`;
 	}
-	var relation = spatialRel || "esriSpatialRelIntersects";
 
 	var geomComponent = "";
-	switch (relation) {
+	switch (spatialRel) {
 		case "esriSpatialRelIntersects":
 			geomComponent = `ST_Intersects_Extent(${geometryField}, ${geometryFilter})`;
 			break;
@@ -47,7 +46,7 @@ function getGeometryQuery(
 			geomComponent = `ST_Touches(${geometryField}, ${geometryFilter})`;
 			break;
 		default:
-			throw new Error(`Unsupported spatial relation: ${relation}`);
+			throw new Error(`Unsupported spatial relation: ${spatialRel}`);
 	}
 	return geomComponent;
 }
