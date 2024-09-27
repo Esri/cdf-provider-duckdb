@@ -64,7 +64,8 @@ function validateConfig(config) {
 		return;
 	}
 
-	throw new Error("Please set a datasource in the default.json file");
+	console.warn("Please set a datasource in the default.json file");
+	return;
 }
 
 module.exports = {
