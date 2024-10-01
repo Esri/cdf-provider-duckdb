@@ -2,7 +2,7 @@
     "koop-provider-csv": {
       "sources": {
         "my-csv": {
-          "path": "./providers/csv/cities.csv",
+          "path": "./providers/csv/data/cities.csv",
           "metadata": {
             "name": "CitiesData",
             "description": "points of cities",

@@ -1,6 +1,6 @@
 {
     "activeParquetFile": {
-        "path": "./providers/duckdb/smallNYTaxi.parquet",
+        "path": "./providers/duckdb/data/smallNYTaxi.parquet",
         "WKBColumn": "WKB",
         "geomOutColumn": "geometry",
         "idField": "OBJECTID",
