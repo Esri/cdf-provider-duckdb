@@ -1,4 +1,4 @@
-function generateFiltersApplied(geoParams, idField, geometryField, dbWKID) {
+function generateFiltersApplied(geoParams, idField, geometryField) {
 	const {
 		where,
 		objectIds,
@@ -7,7 +7,6 @@ function generateFiltersApplied(geoParams, idField, geometryField, dbWKID) {
 		geometry,
 		resultRecordCount,
 		returnDistinctValues, 
-		outSR
 	} = geoParams;
 
 	const filtersApplied = {};

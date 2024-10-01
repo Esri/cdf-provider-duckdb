@@ -16,7 +16,6 @@ function buildSqlQuery(
 		objectIds,
 		geometry,
 		inSR,
-		outSR,
 		resultOffset,
 		spatialRel,
 		returnIdsOnly,
