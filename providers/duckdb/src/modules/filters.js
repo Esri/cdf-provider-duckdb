@@ -17,10 +17,6 @@ function generateFiltersApplied(geoParams, idField, geometryField, dbWKID) {
 		return filtersApplied;
 	}
 
-	if (outSR == dbWKID) {
-		filtersApplied.projection = true;
-	}
-
 	if (where) {
 		filtersApplied.where = true;
 	}

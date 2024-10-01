@@ -5,7 +5,7 @@ function getGeometryQuery(
 	geometryField,
 	inSR = 4326,
 	spatialRel = "esriSpatialRelIntersects",
-	reprojectionSR = 4326
+	dbSR = 4326
 ) {
 	var rawGeomFilter = "";
 	try {
@@ -14,8 +14,8 @@ function getGeometryQuery(
 		rawGeomFilter = geometry.split(",").map((item) => Number(item.trim()));
 	}
 	var geometryFilter = `ST_GeomFromGeoJSON('${toGeoJsonString(rawGeomFilter)}')`;
-	if (inSR != reprojectionSR) {
-		geometryFilter = `ST_TRANSFORM(${geometryFilter},'EPSG:${inSR}','EPSG:${reprojectionSR}',TRUE)`;
+	if (inSR != dbSR) {
+		geometryFilter = `ST_TRANSFORM(${geometryFilter},'EPSG:${inSR}','EPSG:${dbSR}',TRUE)`;
 	}
 
 	var geomComponent = "";

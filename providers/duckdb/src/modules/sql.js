@@ -16,6 +16,7 @@ function buildSqlQuery(
 		objectIds,
 		geometry,
 		inSR,
+		outSR,
 		resultOffset,
 		spatialRel,
 		returnIdsOnly,
@@ -24,7 +25,7 @@ function buildSqlQuery(
 		returnGeometry,
 	} = geoParams;
 
-	let selectClause = "";
+	var selectClause = "";
 	if (returnCountOnly) {
 		selectClause = "COUNT(1)";
 	} else if (returnIdsOnly) {
