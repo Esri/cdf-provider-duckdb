@@ -5,6 +5,7 @@
         "geomOutColumn": "geometry",
         "idField": "OBJECTID",
         "maxRecordCountPerPage": 10000,
+        "dbWKID": 4326,
         "properties": {
             "name": "smallNYTaxi",
             "description": "one million NY Taxi points"

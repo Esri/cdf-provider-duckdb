@@ -1,6 +1,6 @@
 function validateConfig(config) {
-	if (config.duckdb.sources.deltaPointsTable) {
-		var deltaPointsRequiredFields = [
+	if (config.duckdb.sources.deltaTable) {
+		var deltaRequiredFields = [
 			"deltaUrl",
 			"azureStorageConnStr",
 			"WKBColumn",
@@ -8,28 +8,10 @@ function validateConfig(config) {
 			"idField",
 			"maxRecordCountPerPage",
 			"properties",
+			"dbWKID"
 		];
-		const allKeysTruthy = deltaPointsRequiredFields.every(
-			(key) => config.duckdb.sources.deltaPointsTable[key]
-		);
-		if (!allKeysTruthy) {
-			throw new Error("Error with required key in default.json file");
-		}
-		return;
-	}
-
-	if (config.duckdb.sources.deltaBinsTable) {
-		var deltaBinsRequiredFields = [
-			"deltaUrl",
-			"azureStorageConnStr",
-			"WKBColumn",
-			"geomOutColumn",
-			"idField",
-			"maxRecordCountPerPage",
-			"properties",
-		];
-		const allKeysTruthy = deltaBinsRequiredFields.every(
-			(key) => config.duckdb.sources.deltaBinsTable[key]
+		const allKeysTruthy = deltaRequiredFields.every(
+			(key) => config.duckdb.sources.deltaRequiredFields[key]
 		);
 		if (!allKeysTruthy) {
 			throw new Error("Error with required key in default.json file");
@@ -48,7 +30,8 @@ function validateConfig(config) {
 			"geomOutColumn",
 			"idField",
 			"maxRecordCountPerPage",
-			"properties"
+			"properties",
+			"dbWKID"
 		];
 		const allKeysTruthy = minioRequiredFields.every(
 			(key) => config.duckdb.sources.minio[key]
@@ -60,7 +43,15 @@ function validateConfig(config) {
 	}
 
 	if (config.duckdb.sources.localParquet) {
-		// TODO: add schema validation here
+		var localParquetRequiredFields = [
+			"dfsConfigPath",
+		];
+		const allKeysTruthy = localParquetRequiredFields.every(
+			(key) => config.duckdb.sources.localParquet[key]
+		);
+		if (!allKeysTruthy) {
+			throw new Error("Error with required key in default.json file");
+		}
 		return;
 	}
 

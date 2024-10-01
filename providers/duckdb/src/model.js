@@ -6,6 +6,7 @@ const {
 	validateConfig,
 	buildSqlQuery,
 	generateFiltersApplied,
+	geojsonToBbox
 } = require("./modules");
 
 class Model {
@@ -86,27 +87,57 @@ class Model {
 				else if (req.query[key] + "".toLowerCase() === "false")
 					req.query[key] = false;
 			});
+			// Convert WKID ints from strings 
+			if (req.query.inSR) {
+				req.query.inSR = parseInt(req.query.inSR);
+			}
+			if (req.query.outSR) {
+				req.query.outSR = parseInt(req.query.outSR);
+			}
 			const { query: geoserviceParams } = req;
 			// TODO: speed up returnIdsOnly with large datasets
 			const {
 				resultRecordCount,
 				returnCountOnly,
-				returnDistinctValues,
-				returnGeometry,
 			} = geoserviceParams;
 			const config = koopConfig["duckdb"];
 			const sourceId = req.params.id;
 			const sourceConfig =
 				sourceId == "localParquet" ? this.DFSConfig : config.sources[sourceId];
-			const fetchSize = resultRecordCount || sourceConfig.maxRecordCountPerPage;
+			// only return back one row for metadata purposes
+			const isMetadataRequest = (Object.keys(geoserviceParams).length == 1 && geoserviceParams.hasOwnProperty("f")) || Object.keys(geoserviceParams).length == 0;
+			const fetchSize = isMetadataRequest ? 1 : (resultRecordCount || sourceConfig.maxRecordCountPerPage);
 
 			const sqlQuery = buildSqlQuery(
 				geoserviceParams,
 				sourceConfig.idField,
 				sourceConfig.geomOutColumn,
 				sourceConfig.properties.name,
+				sourceConfig.dbWKID,
 				fetchSize
 			);
+
+			var dbExtent = null;
+			if (isMetadataRequest) {
+				const extentQuery = `SELECT ST_AsGeoJSON(ST_Envelope_Agg(${sourceConfig.geomOutColumn})) AS extent FROM ${sourceConfig.properties.name}`;
+				this.db.all(extentQuery, (err, rows) => {
+					if (err) {
+						console.error(err);
+						return;
+					}
+					var extentGeoJSON = JSON.parse(rows[0]["extent"]);
+					var extentBbox = geojsonToBbox(extentGeoJSON);
+					dbExtent = {
+						"xmin": extentBbox[0],
+						"ymin": extentBbox[1],
+						"xmax": extentBbox[2],
+						"ymax": extentBbox[3],
+						"spatialReference": {
+							"wkid": sourceConfig.dbWKID
+						}
+					}
+				});
+			}
 
 			this.db.all(sqlQuery, (err, rows) => {
 				let geojson = { type: "FeatureCollection", features: [] };
@@ -123,20 +154,24 @@ class Model {
 					geojson = translateToGeoJSON(rows, sourceConfig);
 				}
 
-				if (!returnDistinctValues) {
-					geojson.filtersApplied = generateFiltersApplied(
-						geoserviceParams,
-						sourceConfig.idField,
-						sourceConfig.geomOutColumn
-					);
-				}
-
+				geojson.filtersApplied = generateFiltersApplied(
+					geoserviceParams,
+					sourceConfig.idField,
+					sourceConfig.geomOutColumn, 
+					sourceConfig.dbWKID
+				);
 				geojson.metadata = {
 					...sourceConfig.properties,
 					maxRecordCount: sourceConfig.maxRecordCountPerPage,
 					idField: sourceConfig.idField,
-					//extent?
+					...(dbExtent && { extent: dbExtent }),
 				};
+				geojson.crs = {
+					type: `${sourceConfig.dbWKID}`,
+					properties: {
+					  name: `urn:ogc:def:crs:EPSG::${sourceConfig.dbWKID}`
+					}
+				}
 				callback(null, geojson);
 			});
 		} catch (error) {

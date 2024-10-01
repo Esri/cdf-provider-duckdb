@@ -6,6 +6,7 @@ function buildSqlQuery(
 	idField,
 	geometryField,
 	tableName,
+	dbWKID,
 	fetchSize
 ) {
 	const {
@@ -22,14 +23,6 @@ function buildSqlQuery(
 		returnDistinctValues,
 		returnGeometry,
 	} = geoParams;
-
-	// only return back one row for metadata purposes
-	var isMetadataRequest =
-		Object.keys(geoParams).length == 1 && geoParams.hasOwnProperty("f");
-
-	if (isMetadataRequest) {
-		fetchSize = 1;
-	}
 
 	let selectClause = "";
 	if (returnCountOnly) {
@@ -59,6 +52,7 @@ function buildSqlQuery(
 		geometryField,
 		inSR,
 		spatialRel,
+		dbWKID
 	});
 
 	const orderByClause = orderByFields ? ` ORDER BY ${orderByFields}` : "";
@@ -81,6 +75,7 @@ function buildSqlWhere({
 	geometryField,
 	inSR,
 	spatialRel,
+	dbWKID
 }) {
 	const sqlWhereComponents = [];
 
@@ -106,7 +101,7 @@ function buildSqlWhere({
 	}
 
 	if (geometry && geometryField) {
-		var geomComponent = getGeometryQuery(geometry, geometryField, inSR, spatialRel);
+		var geomComponent = getGeometryQuery(geometry, geometryField, inSR, spatialRel, dbWKID);
 		sqlWhereComponents.push(geomComponent);
 	}
 

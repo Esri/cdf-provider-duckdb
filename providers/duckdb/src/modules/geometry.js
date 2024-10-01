@@ -7,13 +7,6 @@ function getGeometryQuery(
 	spatialRel = "esriSpatialRelIntersects",
 	reprojectionSR = 4326
 ) {
-	if (typeof inSR === "string") {
-		inSR = parseInt(inSR);
-	}
-	if (typeof reprojectionSR === "string") {
-		reprojectionSR = parseInt(reprojectionSR);
-	}
-
 	var rawGeomFilter = "";
 	try {
 		rawGeomFilter = JSON.parse(geometry);
@@ -98,6 +91,19 @@ function isEnvelopeArray(envelopeArray) {
 	return envelopeArray.every((item) => typeof item === "number");
 }
 
+function geojsonToBbox(geoJsonPolygon) {
+    const coordinates = geoJsonPolygon.coordinates[0];
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    coordinates.forEach(([longitude, latitude]) => {
+        if (longitude < minX) minX = longitude;
+        if (longitude > maxX) maxX = longitude;
+        if (latitude < minY) minY = latitude;
+        if (latitude > maxY) maxY = latitude;
+    });
+    return [minX, minY, maxX, maxY];
+}
+
 module.exports = {
 	getGeometryQuery,
+	geojsonToBbox
 };
