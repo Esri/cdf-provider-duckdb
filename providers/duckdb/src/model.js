@@ -87,7 +87,6 @@ class Model {
 				else if (req.query[key] + "".toLowerCase() === "false")
 					req.query[key] = false;
 			});
-			console.log(req.query);
 			const { query: geoserviceParams } = req;
 			// TODO: speed up returnIdsOnly with large datasets
 			const { resultRecordCount, returnCountOnly } = geoserviceParams;
