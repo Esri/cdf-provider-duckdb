@@ -87,13 +87,7 @@ class Model {
 				else if (req.query[key] + "".toLowerCase() === "false")
 					req.query[key] = false;
 			});
-			// Convert WKID ints from strings 
-			if (req.query.inSR) {
-				req.query.inSR = parseInt(req.query.inSR);
-			}
-			if (req.query.outSR) {
-				req.query.outSR = parseInt(req.query.outSR);
-			}
+			console.log(req.query);
 			const { query: geoserviceParams } = req;
 			// TODO: speed up returnIdsOnly with large datasets
 			const {

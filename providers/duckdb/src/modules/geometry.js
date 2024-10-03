@@ -3,7 +3,7 @@ const { arcgisToGeoJSON } = require("./terraformer");
 function getGeometryQuery(
 	geometry,
 	geometryField,
-	inSR = 4326,
+	inSR,
 	spatialRel = "esriSpatialRelIntersects",
 	dbSR = 4326
 ) {
@@ -14,6 +14,13 @@ function getGeometryQuery(
 		rawGeomFilter = geometry.split(",").map((item) => Number(item.trim()));
 	}
 	var geometryFilter = `ST_GeomFromGeoJSON('${toGeoJsonString(rawGeomFilter)}')`;
+
+	// inSR can be null, a wkid string, a wkt string, or nested within the json 
+	if (!inSR) {
+		inSR = getSpatialReference(rawGeomFilter, dbSR);
+	} else {
+		inSR = parseInputSR(inSR);
+	}
 	if (inSR != dbSR) {
 		geometryFilter = `ST_TRANSFORM(${geometryFilter},'EPSG:${inSR}','EPSG:${dbSR}',TRUE)`;
 	}
@@ -42,6 +49,34 @@ function getGeometryQuery(
 			throw new Error(`Unsupported spatial relation: ${spatialRel}`);
 	}
 	return geomComponent;
+}
+
+function getSpatialReference(rawGeomFilter, dbSR) {
+    if (!rawGeomFilter) return dbSR;
+
+    const { spatialReference } = rawGeomFilter || {};
+    if (spatialReference) {
+        if ("wkid" in spatialReference) {
+            const { wkid, latestWkid } = spatialReference;
+            return latestWkid === dbSR ? latestWkid : wkid;
+        } else if ("wkt" in spatialReference) {
+			// TODO: implement wkt parsing with something like https://github.com/proj4js/wkt-parser
+            throw new Error("WKT string parsing not supported");
+        }
+    }
+    return dbSR;
+}
+
+function parseInputSR(inSR) {
+    if (typeof inSR === 'string') {
+        try {
+            const parsed = JSON.parse(inSR);
+            return parsed.spatialReference?.wkid || parseInt(inSR);
+        } catch {
+            return parseInt(inSR);
+        }
+    }
+    return inSR;
 }
 
 function toGeoJsonString(filter) {
