@@ -52,14 +52,17 @@ function buildSqlQuery(
 		geometryField,
 		inSR,
 		spatialRel,
-		dbWKID
+		dbWKID,
 	});
 
 	const orderByClause = orderByFields ? ` ORDER BY ${orderByFields}` : "";
 
 	const distinctClause = returnDistinctValues ? `DISTINCT ` : "";
 
-	const limitClause = fetchSize && !returnIdsOnly && !returnDistinctValues ? ` LIMIT ${fetchSize}` : "";
+	const limitClause =
+		fetchSize && !returnIdsOnly && !returnDistinctValues
+			? ` LIMIT ${fetchSize}`
+			: "";
 
 	const offsetClause =
 		resultOffset && !returnIdsOnly ? ` OFFSET ${resultOffset}` : "";
@@ -75,7 +78,7 @@ function buildSqlWhere({
 	geometryField,
 	inSR,
 	spatialRel,
-	dbWKID
+	dbWKID,
 }) {
 	const sqlWhereComponents = [];
 
@@ -101,7 +104,13 @@ function buildSqlWhere({
 	}
 
 	if (geometry && geometryField) {
-		var geomComponent = getGeometryQuery(geometry, geometryField, inSR, spatialRel, dbWKID);
+		var geomComponent = getGeometryQuery(
+			geometry,
+			geometryField,
+			inSR,
+			spatialRel,
+			dbWKID
+		);
 		sqlWhereComponents.push(geomComponent);
 	}
 

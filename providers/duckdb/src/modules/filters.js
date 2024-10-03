@@ -6,13 +6,13 @@ function generateFiltersApplied(geoParams, idField, geometryField) {
 		resultOffset,
 		geometry,
 		resultRecordCount,
-		returnDistinctValues, 
+		returnDistinctValues,
 	} = geoParams;
 
 	const filtersApplied = {};
 
 	// don't apply filters if asking for unique values of a column
-	if (returnDistinctValues) {  
+	if (returnDistinctValues) {
 		return filtersApplied;
 	}
 

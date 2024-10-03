@@ -8,7 +8,7 @@ function validateConfig(config) {
 			"idField",
 			"maxRecordCountPerPage",
 			"properties",
-			"dbWKID"
+			"dbWKID",
 		];
 		const allKeysTruthy = deltaRequiredFields.every(
 			(key) => config.duckdb.sources.deltaRequiredFields[key]
@@ -31,7 +31,7 @@ function validateConfig(config) {
 			"idField",
 			"maxRecordCountPerPage",
 			"properties",
-			"dbWKID"
+			"dbWKID",
 		];
 		const allKeysTruthy = minioRequiredFields.every(
 			(key) => config.duckdb.sources.minio[key]
@@ -43,9 +43,7 @@ function validateConfig(config) {
 	}
 
 	if (config.duckdb.sources.localParquet) {
-		var localParquetRequiredFields = [
-			"dfsConfigPath",
-		];
+		var localParquetRequiredFields = ["dfsConfigPath"];
 		const allKeysTruthy = localParquetRequiredFields.every(
 			(key) => config.duckdb.sources.localParquet[key]
 		);

@@ -1,5 +1,5 @@
 // From terraformer https://github.com/terraformer-js/terraformer/blob/main/packages/arcgis/src/arcgis.js
-// TODO: Consider removing this code and including terraformer as a dependency 
+// TODO: Consider removing this code and including terraformer as a dependency
 
 const isNumber = (n) => !isNaN(parseFloat(n)) && isFinite(n);
 

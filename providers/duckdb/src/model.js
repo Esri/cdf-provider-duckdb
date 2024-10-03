@@ -6,7 +6,7 @@ const {
 	validateConfig,
 	buildSqlQuery,
 	generateFiltersApplied,
-	geojsonToBbox
+	geojsonToBbox,
 } = require("./modules");
 
 class Model {
@@ -90,17 +90,19 @@ class Model {
 			console.log(req.query);
 			const { query: geoserviceParams } = req;
 			// TODO: speed up returnIdsOnly with large datasets
-			const {
-				resultRecordCount,
-				returnCountOnly,
-			} = geoserviceParams;
+			const { resultRecordCount, returnCountOnly } = geoserviceParams;
 			const config = koopConfig["duckdb"];
 			const sourceId = req.params.id;
 			const sourceConfig =
 				sourceId == "localParquet" ? this.DFSConfig : config.sources[sourceId];
 			// only return back one row for metadata purposes
-			const isMetadataRequest = (Object.keys(geoserviceParams).length == 1 && geoserviceParams.hasOwnProperty("f")) || Object.keys(geoserviceParams).length == 0;
-			const fetchSize = isMetadataRequest ? 1 : (resultRecordCount || sourceConfig.maxRecordCountPerPage);
+			const isMetadataRequest =
+				(Object.keys(geoserviceParams).length == 1 &&
+					geoserviceParams.hasOwnProperty("f")) ||
+				Object.keys(geoserviceParams).length == 0;
+			const fetchSize = isMetadataRequest
+				? 1
+				: resultRecordCount || sourceConfig.maxRecordCountPerPage;
 
 			const sqlQuery = buildSqlQuery(
 				geoserviceParams,
@@ -122,14 +124,14 @@ class Model {
 					var extentGeoJSON = JSON.parse(rows[0]["extent"]);
 					var extentBbox = geojsonToBbox(extentGeoJSON);
 					dbExtent = {
-						"xmin": extentBbox[0],
-						"ymin": extentBbox[1],
-						"xmax": extentBbox[2],
-						"ymax": extentBbox[3],
-						"spatialReference": {
-							"wkid": sourceConfig.dbWKID
-						}
-					}
+						xmin: extentBbox[0],
+						ymin: extentBbox[1],
+						xmax: extentBbox[2],
+						ymax: extentBbox[3],
+						spatialReference: {
+							wkid: sourceConfig.dbWKID,
+						},
+					};
 				});
 			}
 
@@ -151,7 +153,7 @@ class Model {
 				geojson.filtersApplied = generateFiltersApplied(
 					geoserviceParams,
 					sourceConfig.idField,
-					sourceConfig.geomOutColumn,
+					sourceConfig.geomOutColumn
 				);
 				geojson.metadata = {
 					...sourceConfig.properties,
@@ -162,9 +164,9 @@ class Model {
 				geojson.crs = {
 					type: `${sourceConfig.dbWKID}`,
 					properties: {
-					  name: `urn:ogc:def:crs:EPSG::${sourceConfig.dbWKID}`
-					}
-				}
+						name: `urn:ogc:def:crs:EPSG::${sourceConfig.dbWKID}`,
+					},
+				};
 				callback(null, geojson);
 			});
 		} catch (error) {

@@ -13,9 +13,11 @@ function getGeometryQuery(
 	} catch (error) {
 		rawGeomFilter = geometry.split(",").map((item) => Number(item.trim()));
 	}
-	var geometryFilter = `ST_GeomFromGeoJSON('${toGeoJsonString(rawGeomFilter)}')`;
+	var geometryFilter = `ST_GeomFromGeoJSON('${toGeoJsonString(
+		rawGeomFilter
+	)}')`;
 
-	// inSR can be null, a wkid string, a wkt string, or nested within the json 
+	// inSR can be null, a wkid string, a wkt string, or nested within the json
 	if (!inSR) {
 		inSR = getSpatialReference(rawGeomFilter, dbSR);
 	} else {
@@ -52,31 +54,31 @@ function getGeometryQuery(
 }
 
 function getSpatialReference(rawGeomFilter, dbSR) {
-    if (!rawGeomFilter) return dbSR;
+	if (!rawGeomFilter) return dbSR;
 
-    const { spatialReference } = rawGeomFilter || {};
-    if (spatialReference) {
-        if ("wkid" in spatialReference) {
-            const { wkid, latestWkid } = spatialReference;
-            return latestWkid === dbSR ? latestWkid : wkid;
-        } else if ("wkt" in spatialReference) {
+	const { spatialReference } = rawGeomFilter || {};
+	if (spatialReference) {
+		if ("wkid" in spatialReference) {
+			const { wkid, latestWkid } = spatialReference;
+			return latestWkid === dbSR ? latestWkid : wkid;
+		} else if ("wkt" in spatialReference) {
 			// TODO: implement wkt parsing with something like https://github.com/proj4js/wkt-parser
-            throw new Error("WKT string parsing not supported");
-        }
-    }
-    return dbSR;
+			throw new Error("WKT string parsing not supported");
+		}
+	}
+	return dbSR;
 }
 
 function parseInputSR(inSR) {
-    if (typeof inSR === 'string') {
-        try {
-            const parsed = JSON.parse(inSR);
-            return parsed.spatialReference?.wkid || parseInt(inSR);
-        } catch {
-            return parseInt(inSR);
-        }
-    }
-    return inSR;
+	if (typeof inSR === "string") {
+		try {
+			const parsed = JSON.parse(inSR);
+			return parsed.spatialReference?.wkid || parseInt(inSR);
+		} catch {
+			return parseInt(inSR);
+		}
+	}
+	return inSR;
 }
 
 function toGeoJsonString(filter) {
@@ -100,7 +102,7 @@ function toGeoJsonString(filter) {
 			],
 		};
 	} else {
-        // terraformer conversion function 
+		// terraformer conversion function
 		geojson = arcgisToGeoJSON(filter);
 	}
 	return JSON.stringify(geojson);
@@ -127,18 +129,21 @@ function isEnvelopeArray(envelopeArray) {
 }
 
 function geojsonToBbox(geoJsonPolygon) {
-    const coordinates = geoJsonPolygon.coordinates[0];
-    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-    coordinates.forEach(([longitude, latitude]) => {
-        if (longitude < minX) minX = longitude;
-        if (longitude > maxX) maxX = longitude;
-        if (latitude < minY) minY = latitude;
-        if (latitude > maxY) maxY = latitude;
-    });
-    return [minX, minY, maxX, maxY];
+	const coordinates = geoJsonPolygon.coordinates[0];
+	let minX = Infinity,
+		minY = Infinity,
+		maxX = -Infinity,
+		maxY = -Infinity;
+	coordinates.forEach(([longitude, latitude]) => {
+		if (longitude < minX) minX = longitude;
+		if (longitude > maxX) maxX = longitude;
+		if (latitude < minY) minY = latitude;
+		if (latitude > maxY) maxY = latitude;
+	});
+	return [minX, minY, maxX, maxY];
 }
 
 module.exports = {
 	getGeometryQuery,
-	geojsonToBbox
+	geojsonToBbox,
 };
