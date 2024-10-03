@@ -151,8 +151,7 @@ class Model {
 				geojson.filtersApplied = generateFiltersApplied(
 					geoserviceParams,
 					sourceConfig.idField,
-					sourceConfig.geomOutColumn, 
-					sourceConfig.dbWKID
+					sourceConfig.geomOutColumn,
 				);
 				geojson.metadata = {
 					...sourceConfig.properties,
