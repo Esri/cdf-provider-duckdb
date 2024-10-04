@@ -73,3 +73,9 @@ The repository includes a demo project but you will need docker. Once installed 
 ```
 Then you can go to `http://127.0.0.1:8080/elastic-sql/rest/services/fires/FeatureServer/0/query` to check if the demo worked. To see the points on a map edit the html file in `frontend/index.html` to point to `url: "http://127.0.0.1:8080/elastic-sql/rest/services/fires/FeatureServer/0"`
 
+Note: by default elasticsearch in a container will use 50% of available memory for the JVM heap. So if you allow the container to have 32gb it will create a heap of 16GB. You can limit the heap size by setting a flag in the docker compose (note: this is untested): 
+```
+environment:
+  - ES_JAVA_OPTS=-Xms4g -Xmx4g
+```
+
