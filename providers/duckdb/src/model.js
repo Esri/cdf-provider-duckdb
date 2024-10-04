@@ -6,7 +6,7 @@ const {
 	validateConfig,
 	buildSqlQuery,
 	generateFiltersApplied,
-	geojsonToBbox,
+	getExtentFromGeoJson,
 } = require("./modules");
 
 class Model {
@@ -120,17 +120,7 @@ class Model {
 						console.error(err);
 						return;
 					}
-					var extentGeoJSON = JSON.parse(rows[0]["extent"]);
-					var extentBbox = geojsonToBbox(extentGeoJSON);
-					dbExtent = {
-						xmin: extentBbox[0],
-						ymin: extentBbox[1],
-						xmax: extentBbox[2],
-						ymax: extentBbox[3],
-						spatialReference: {
-							wkid: sourceConfig.dbWKID,
-						},
-					};
+					dbExtent = getExtentFromGeoJson(JSON.parse(rows[0]["extent"]), sourceConfig.dbWKID);
 				});
 			}
 

@@ -7,6 +7,8 @@ function getGeometryQuery(
 	spatialRel = "esriSpatialRelIntersects",
 	dbSR = 4326
 ) {
+	// reference https://developers.arcgis.com/rest/services-reference/enterprise/query-feature-service-layer/ 
+	// geometry can be comma delimited or a couple different types of json. toGeoJsonString helps simplify this and uses terraformer
 	var rawGeomFilter = "";
 	try {
 		rawGeomFilter = JSON.parse(geometry);
@@ -17,12 +19,8 @@ function getGeometryQuery(
 		rawGeomFilter
 	)}')`;
 
-	// inSR can be null, a wkid string, a wkt string, or nested within the json
-	if (!inSR) {
-		inSR = getSpatialReference(rawGeomFilter, dbSR);
-	} else {
-		inSR = parseInputSR(inSR);
-	}
+	// reference above link - inSR can be null, a wkid string, a wkt string, or nested within the geometry json
+	inSR = getSpatialReference(rawGeomFilter, inSR, dbSR);
 	if (inSR != dbSR) {
 		geometryFilter = `ST_TRANSFORM(${geometryFilter},'EPSG:${inSR}','EPSG:${dbSR}',TRUE)`;
 	}
@@ -53,7 +51,19 @@ function getGeometryQuery(
 	return geomComponent;
 }
 
-function getSpatialReference(rawGeomFilter, dbSR) {
+function getSpatialReference(rawGeomFilter, inSR, dbSR) {
+	if (inSR) {
+		if (typeof inSR === "string") {
+			try {
+				const parsed = JSON.parse(inSR);
+				return parsed.spatialReference?.wkid || parseInt(inSR);
+			} catch {
+				return parseInt(inSR);
+			}
+		}
+		return inSR;
+	}
+
 	if (!rawGeomFilter) return dbSR;
 
 	const { spatialReference } = rawGeomFilter || {};
@@ -67,18 +77,6 @@ function getSpatialReference(rawGeomFilter, dbSR) {
 		}
 	}
 	return dbSR;
-}
-
-function parseInputSR(inSR) {
-	if (typeof inSR === "string") {
-		try {
-			const parsed = JSON.parse(inSR);
-			return parsed.spatialReference?.wkid || parseInt(inSR);
-		} catch {
-			return parseInt(inSR);
-		}
-	}
-	return inSR;
 }
 
 function toGeoJsonString(filter) {
@@ -128,7 +126,7 @@ function isEnvelopeArray(envelopeArray) {
 	return envelopeArray.every((item) => typeof item === "number");
 }
 
-function geojsonToBbox(geoJsonPolygon) {
+function getExtentFromGeoJson(geoJsonPolygon, dbWKID) {
 	const coordinates = geoJsonPolygon.coordinates[0];
 	let minX = Infinity,
 		minY = Infinity,
@@ -140,10 +138,18 @@ function geojsonToBbox(geoJsonPolygon) {
 		if (latitude < minY) minY = latitude;
 		if (latitude > maxY) maxY = latitude;
 	});
-	return [minX, minY, maxX, maxY];
+	return {
+		xmin: minX,
+		ymin: minY,
+		xmax: maxX,
+		ymax: maxY,
+		spatialReference: {
+			wkid: dbWKID,
+		},
+	};
 }
 
 module.exports = {
 	getGeometryQuery,
-	geojsonToBbox,
+	getExtentFromGeoJson,
 };
