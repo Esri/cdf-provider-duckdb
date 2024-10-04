@@ -33,6 +33,22 @@ describe("geometryQuery tests:", function () {
 		done();
 	});
 
+	it("delimited point with empty inSR", function (done) {
+		let query = getGeometryQuery(
+			"-123, 48",
+			"geometry",
+			"",
+			"esriSpatialRelIntersects",
+			3857
+		);
+		console.log(query);
+		expect(query).to.not.equal(null);
+		expect(query).to.equal(
+			`ST_Intersects_Extent(geometry, ST_GeomFromGeoJSON('{"type":"Point","coordinates":[-123,48]}'))`
+		);
+		done();
+	});
+
 	it("delimited bbox", function (done) {
 		let query = getGeometryQuery(
 			"-123, 48, -122, 49",
@@ -91,6 +107,19 @@ describe("geometryQuery tests:", function () {
 		expect(query).to.equal(
 			`ST_Intersects_Extent(geometry, ST_GeomFromGeoJSON('{"type":"Polygon","coordinates":[[[-122,49],[-123,49],[-123,48],[-122,48],[-122,49]]]}'))`
 		);
+		done();
+	});
+
+	it("envelope with wkt", function (done) {
+		const query = () => {
+			return getGeometryQuery(
+				'{"xmin": -123, "xmax": -122, "ymin": 48, "ymax": 49, "spatialReference": {"wkt": "GEOGCS[\\"GCS_WGS_1984\\",DATUM[\\"D_WGS_1984\\",SPHEROID[\\"WGS_1984\\",6378137.0,298.257223563]],PRIMEM[\\"Greenwich\\",0.0],UNIT[\\"Degree\\",0.0174532925199433]]"}}',
+				"geometry",
+				"",
+				"esriSpatialRelIntersects"
+			);
+		};
+		expect(query).to.throw(Error, "WKT string parsing not supported");
 		done();
 	});
 

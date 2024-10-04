@@ -3,26 +3,26 @@ const { arcgisToGeoJSON } = require("./terraformer");
 function getGeometryQuery(
 	geometry,
 	geometryField,
-	inSR = 4326,
+	inSR,
 	spatialRel = "esriSpatialRelIntersects",
-	reprojectionSR = 4326
+	dbSR = 4326
 ) {
-	if (typeof inSR === "string") {
-		inSR = parseInt(inSR);
-	}
-	if (typeof reprojectionSR === "string") {
-		reprojectionSR = parseInt(reprojectionSR);
-	}
-
+	// reference https://developers.arcgis.com/rest/services-reference/enterprise/query-feature-service-layer/ 
+	// geometry can be comma delimited or a couple different types of json. toGeoJsonString helps simplify this and uses terraformer
 	var rawGeomFilter = "";
 	try {
 		rawGeomFilter = JSON.parse(geometry);
 	} catch (error) {
 		rawGeomFilter = geometry.split(",").map((item) => Number(item.trim()));
 	}
-	var geometryFilter = `ST_GeomFromGeoJSON('${toGeoJsonString(rawGeomFilter)}')`;
-	if (inSR != reprojectionSR) {
-		geometryFilter = `ST_TRANSFORM(${geometryFilter},'EPSG:${inSR}','EPSG:${reprojectionSR}',TRUE)`;
+	var geometryFilter = `ST_GeomFromGeoJSON('${toGeoJsonString(
+		rawGeomFilter
+	)}')`;
+
+	// reference above link - inSR can be null, a wkid string, a wkt string, or nested within the geometry json
+	inSR = getSpatialReference(rawGeomFilter, inSR, dbSR);
+	if (inSR != dbSR) {
+		geometryFilter = `ST_TRANSFORM(${geometryFilter},'EPSG:${inSR}','EPSG:${dbSR}',TRUE)`;
 	}
 
 	var geomComponent = "";
@@ -51,6 +51,34 @@ function getGeometryQuery(
 	return geomComponent;
 }
 
+function getSpatialReference(rawGeomFilter, inSR, dbSR) {
+	if (inSR) {
+		if (typeof inSR === "string") {
+			try {
+				const parsed = JSON.parse(inSR);
+				return parsed.spatialReference?.wkid || parseInt(inSR);
+			} catch {
+				return parseInt(inSR);
+			}
+		}
+		return inSR;
+	}
+
+	if (!rawGeomFilter) return dbSR;
+
+	const { spatialReference } = rawGeomFilter || {};
+	if (spatialReference) {
+		if ("wkid" in spatialReference) {
+			const { wkid, latestWkid } = spatialReference;
+			return latestWkid === dbSR ? latestWkid : wkid;
+		} else if ("wkt" in spatialReference) {
+			// TODO: implement wkt parsing with something like https://github.com/proj4js/wkt-parser
+			throw new Error("WKT string parsing not supported");
+		}
+	}
+	return dbSR;
+}
+
 function toGeoJsonString(filter) {
 	var geojson = {};
 	if (isSinglePointArray(filter)) {
@@ -72,7 +100,7 @@ function toGeoJsonString(filter) {
 			],
 		};
 	} else {
-        // terraformer conversion function 
+		// terraformer conversion function
 		geojson = arcgisToGeoJSON(filter);
 	}
 	return JSON.stringify(geojson);
@@ -98,6 +126,30 @@ function isEnvelopeArray(envelopeArray) {
 	return envelopeArray.every((item) => typeof item === "number");
 }
 
+function getExtentFromGeoJson(geoJsonPolygon, dbWKID) {
+	const coordinates = geoJsonPolygon.coordinates[0];
+	let minX = Infinity,
+		minY = Infinity,
+		maxX = -Infinity,
+		maxY = -Infinity;
+	coordinates.forEach(([longitude, latitude]) => {
+		if (longitude < minX) minX = longitude;
+		if (longitude > maxX) maxX = longitude;
+		if (latitude < minY) minY = latitude;
+		if (latitude > maxY) maxY = latitude;
+	});
+	return {
+		xmin: minX,
+		ymin: minY,
+		xmax: maxX,
+		ymax: maxY,
+		spatialReference: {
+			wkid: dbWKID,
+		},
+	};
+}
+
 module.exports = {
 	getGeometryQuery,
+	getExtentFromGeoJson,
 };

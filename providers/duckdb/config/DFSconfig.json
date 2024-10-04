@@ -1,10 +1,11 @@
 {
     "activeParquetFile": {
-        "path": "./providers/duckdb/smallNYTaxi.parquet",
+        "path": "./providers/duckdb/data/SmallNY2262.parquet",
         "WKBColumn": "WKB",
         "geomOutColumn": "geometry",
         "idField": "OBJECTID",
         "maxRecordCountPerPage": 10000,
+        "dbWKID": 2262,
         "properties": {
             "name": "smallNYTaxi",
             "description": "one million NY Taxi points"

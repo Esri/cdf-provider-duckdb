@@ -6,9 +6,15 @@ function generateFiltersApplied(geoParams, idField, geometryField) {
 		resultOffset,
 		geometry,
 		resultRecordCount,
+		returnDistinctValues,
 	} = geoParams;
 
 	const filtersApplied = {};
+
+	// don't apply filters if asking for unique values of a column for symbology
+	if (returnDistinctValues) {
+		return filtersApplied;
+	}
 
 	if (where) {
 		filtersApplied.where = true;
