@@ -10,7 +10,7 @@ const client = new Client({
 async function execute() {
   try {
     await client.indices.delete({ index: 'fires' });
-    console.log("index deleted to be refreshed")
+    console.log("index deleted");
   } catch (err) {
     console.log('no index to delete');
   }
