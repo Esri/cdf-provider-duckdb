@@ -1,6 +1,47 @@
 # ElasticSQL 
 This provider is adopted from https://github.com/koopjs/koop-provider-elastic-sql. It uses the elastic/opensearch SQL API.
 
+## Demo
+The repository includes demo sample data but you will need docker. We can use docker compose to create a local Elastic instance and load it with sample data:
+
+```sh
+> cd ./providers/elasticsql 
+
+> npm install
+
+> cd demo
+
+# use Docker to run Elastic/Kibana
+> docker-compose up -d
+
+# load sample data; this will create an Elastc index named "fires"
+# after running the loader you can optionally check kibana to view the data in ES
+# go to localhost:5601 and create a data view under the "discover" tab
+> node loader.js 
+
+# go back to cdf app base directory
+> cd ../../../
+
+# run the cdf app 
+> npm run start
+```
+Then you can go to `http://127.0.0.1:8080/elastic-sql/rest/services/fires/FeatureServer/0/query` to check if the demo worked. To see the points on a map edit the html file in `frontend/index.html` to point to `url: "http://127.0.0.1:8080/elastic-sql/rest/services/fires/FeatureServer/0"`
+
+Note: by default elasticsearch in a container will use 50% of available memory for the JVM heap. So if you allow the container to have 32gb it will create a heap of 16GB. You can limit the heap size by setting a flag in the docker compose (note: this is untested): 
+```
+environment:
+  - ES_JAVA_OPTS=-Xms4g -Xmx4g
+```
+
+## TODO: 
+- replace wildfires json with much larger NY taxi json dataset (1 million rows) and compress to tar.gz
+- insert larger taxi json to ES with modifying loader.js
+- slim down dependencies, remove joi schema validation 
+- implement checking for metadata request and fetching geometry extent from ES 
+- implement geojson.metadata, geojson.filtersApplied, and geojson.crs
+- handle returnidsonly and returnDistinct for symbology
+- handle different geometry relationships with ES, intersects/within, etc? 
+
 ## Data considerations
 In order to gain the greatest efficiency from this provider, each document/record in _your dataset should have a unique-indentifier that is a property of the document/record_. This is important, because even though Elastic will create its own `_id` field as part of a document's metadata, _metadata fields are not accessible via the SQL API_.
 
@@ -54,28 +95,5 @@ The `id` parameter should be filled with the name of the Elastic index you are t
 /elastic-sql/rest/services/fires/FeatureServer/0/query
 ```
 
-## Demo
-The repository includes a demo project but you will need docker. Once installed create a local Elastic instance and load it with sample data:
 
-```sh
-> npm install
-
-> cd demo
-
-# use Docker to run Elastic/Kibana
-> docker-compose up -d
-
-# load sample data; this will create an Elastc index named "fires"
-> node loader.js 
-
-# start the Koop application
-> node index.js
-```
-Then you can go to `http://127.0.0.1:8080/elastic-sql/rest/services/fires/FeatureServer/0/query` to check if the demo worked. To see the points on a map edit the html file in `frontend/index.html` to point to `url: "http://127.0.0.1:8080/elastic-sql/rest/services/fires/FeatureServer/0"`
-
-Note: by default elasticsearch in a container will use 50% of available memory for the JVM heap. So if you allow the container to have 32gb it will create a heap of 16GB. You can limit the heap size by setting a flag in the docker compose (note: this is untested): 
-```
-environment:
-  - ES_JAVA_OPTS=-Xms4g -Xmx4g
-```
 
