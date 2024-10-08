@@ -1,4 +1,5 @@
 // From terraformer https://github.com/terraformer-js/terraformer/blob/main/packages/arcgis/src/arcgis.js
+// TODO: Consider removing this code and including terraformer as a dependency
 
 const isNumber = (n) => !isNaN(parseFloat(n)) && isFinite(n);
 
@@ -314,17 +315,6 @@ function arcgisToGeoJSON(arcgis, idAttribute) {
 	// if no valid geometry was encountered
 	if (JSON.stringify(geojson.geometry) === JSON.stringify({})) {
 		geojson.geometry = null;
-	}
-
-	if (
-		arcgis.spatialReference &&
-		arcgis.spatialReference.wkid &&
-		arcgis.spatialReference.wkid !== 4326
-	) {
-		console.warn(
-			"Object converted in non-standard crs - " +
-				JSON.stringify(arcgis.spatialReference)
-		);
 	}
 
 	return geojson;

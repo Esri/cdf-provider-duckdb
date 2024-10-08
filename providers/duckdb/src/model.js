@@ -6,6 +6,7 @@ const {
 	validateConfig,
 	buildSqlQuery,
 	generateFiltersApplied,
+	getExtentFromGeoJson,
 } = require("./modules");
 
 class Model {
@@ -88,25 +89,40 @@ class Model {
 			});
 			const { query: geoserviceParams } = req;
 			// TODO: speed up returnIdsOnly with large datasets
-			const {
-				resultRecordCount,
-				returnCountOnly,
-				returnDistinctValues,
-				returnGeometry,
-			} = geoserviceParams;
+			const { resultRecordCount, returnCountOnly } = geoserviceParams;
 			const config = koopConfig["duckdb"];
 			const sourceId = req.params.id;
 			const sourceConfig =
 				sourceId == "localParquet" ? this.DFSConfig : config.sources[sourceId];
-			const fetchSize = resultRecordCount || sourceConfig.maxRecordCountPerPage;
+			// only return back one row for metadata purposes
+			const isMetadataRequest =
+				(Object.keys(geoserviceParams).length == 1 &&
+					geoserviceParams.hasOwnProperty("f")) ||
+				Object.keys(geoserviceParams).length == 0;
+			const fetchSize = isMetadataRequest
+				? 1
+				: resultRecordCount || sourceConfig.maxRecordCountPerPage;
 
 			const sqlQuery = buildSqlQuery(
 				geoserviceParams,
 				sourceConfig.idField,
 				sourceConfig.geomOutColumn,
 				sourceConfig.properties.name,
+				sourceConfig.dbWKID,
 				fetchSize
 			);
+
+			var dbExtent = null;
+			if (isMetadataRequest) {
+				const extentQuery = `SELECT ST_AsGeoJSON(ST_Envelope_Agg(${sourceConfig.geomOutColumn})) AS extent FROM ${sourceConfig.properties.name}`;
+				this.db.all(extentQuery, (err, rows) => {
+					if (err) {
+						console.error(err);
+						return;
+					}
+					dbExtent = getExtentFromGeoJson(JSON.parse(rows[0]["extent"]), sourceConfig.dbWKID);
+				});
+			}
 
 			this.db.all(sqlQuery, (err, rows) => {
 				let geojson = { type: "FeatureCollection", features: [] };
@@ -123,19 +139,22 @@ class Model {
 					geojson = translateToGeoJSON(rows, sourceConfig);
 				}
 
-				if (!returnDistinctValues) {
-					geojson.filtersApplied = generateFiltersApplied(
-						geoserviceParams,
-						sourceConfig.idField,
-						sourceConfig.geomOutColumn
-					);
-				}
-
+				geojson.filtersApplied = generateFiltersApplied(
+					geoserviceParams,
+					sourceConfig.idField,
+					sourceConfig.geomOutColumn
+				);
 				geojson.metadata = {
 					...sourceConfig.properties,
 					maxRecordCount: sourceConfig.maxRecordCountPerPage,
 					idField: sourceConfig.idField,
-					//extent?
+					...(dbExtent && { extent: dbExtent }),
+				};
+				geojson.crs = {
+					type: `${sourceConfig.dbWKID}`,
+					properties: {
+						name: `urn:ogc:def:crs:EPSG::${sourceConfig.dbWKID}`,
+					},
 				};
 				callback(null, geojson);
 			});
