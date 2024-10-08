@@ -38,3 +38,6 @@ logs
 /cdconfig.json
 /package.json
 /package-lock.json
+
+# ignore elastic demo data
+wildfires.json
