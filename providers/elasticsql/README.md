@@ -36,6 +36,7 @@ environment:
 ## TODO: 
 - replace wildfires json with much larger NY taxi json dataset (1 million rows) and compress to tar.gz
 - insert larger taxi json to ES with modifying loader.js
+- convert it to a pass-through provider by implementing SQL `LIMIT` 
 - slim down dependencies, remove joi schema validation 
 - implement checking for metadata request and fetching geometry extent from ES 
 - implement geojson.metadata, geojson.filtersApplied, and geojson.crs
