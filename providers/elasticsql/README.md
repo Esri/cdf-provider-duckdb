@@ -41,6 +41,7 @@ environment:
 - implement geojson.metadata, geojson.filtersApplied, and geojson.crs
 - handle returnidsonly and returnDistinct for symbology
 - handle different geometry relationships with ES, intersects/within, etc? 
+- fix tests to use chai instead of jest 
 
 ## Data considerations
 In order to gain the greatest efficiency from this provider, each document/record in _your dataset should have a unique-indentifier that is a property of the document/record_. This is important, because even though Elastic will create its own `_id` field as part of a document's metadata, _metadata fields are not accessible via the SQL API_.
