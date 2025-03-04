@@ -15,7 +15,7 @@ https://github.com/user-attachments/assets/ddb26b4d-38f8-4958-8f86-78f03407621c
 - supports `query` operation with `where` and `geometry` parameters
 
 ## Instructions
-- See the most up to date offical [documentation](https://developers.arcgis.com/enterprise-sdk/guide/custom-data-feeds/pass-through-custom-data-providers/) and [walkthrough](https://developers.arcgis.com/enterprise-sdk/guide/custom-data-feeds/create-a-yelp-custom-data-feed/)
+- See the most up to date official ArcGIS Enterprise [documentation](https://developers.arcgis.com/enterprise-sdk/guide/custom-data-feeds/pass-through-custom-data-providers/) and [walkthrough](https://developers.arcgis.com/enterprise-sdk/guide/custom-data-feeds/create-a-yelp-custom-data-feed/)
 - Or checkout [guide.md](https://github.com/EsriPS/BDT_cdf/blob/master/guide.md) which is a step by step guide on everything you need to know on creating your own custom datafeed
 
 ## Quick Start 
