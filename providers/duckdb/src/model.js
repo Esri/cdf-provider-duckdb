@@ -1,3 +1,18 @@
+/* Copyright 2025 Esri
+
+Licensed under the Apache License Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 const koopConfig = require("config");
 const duckdb = require("duckdb");
 const fs = require("fs");
@@ -23,17 +38,11 @@ class Model {
 
 		var localParquetCreateClause = ``;
 		if (localParquetConfig) {
-			try {
-				const data = fs.readFileSync(localParquetConfig.dfsConfigPath);
-				this.DFSConfig = JSON.parse(data).activeParquetFile;
-			} catch (err) {
-				console.error("Error reading DFS config file:", err);
-			}
-			localParquetCreateClause = `CREATE TABLE ${this.DFSConfig.properties.name} AS 
-						SELECT * EXCLUDE ${this.DFSConfig.WKBColumn}, 
-						ST_GeomFromWKB(CAST(${this.DFSConfig.WKBColumn} AS BLOB)) AS ${this.DFSConfig.geomOutColumn}, 
-						CAST(row_number() OVER () AS INTEGER) AS ${this.DFSConfig.idField}
-						FROM read_parquet('${this.DFSConfig.path}/*.parquet', hive_partitioning = true);`;
+			localParquetCreateClause = `CREATE TABLE ${localParquetConfig.properties.name} AS 
+						SELECT * EXCLUDE ${localParquetConfig.WKBColumn}, 
+						ST_GeomFromWKB(CAST(${localParquetConfig.WKBColumn} AS BLOB)) AS ${localParquetConfig.geomOutColumn}, 
+						CAST(row_number() OVER () AS INTEGER) AS ${localParquetConfig.idField}
+						FROM read_parquet('${localParquetConfig.path}/*.parquet', hive_partitioning = true);`;
 		}
 
 		var minioCreateClause = ``;
@@ -92,8 +101,7 @@ class Model {
 			const { resultRecordCount, returnCountOnly } = geoserviceParams;
 			const config = koopConfig["duckdb"];
 			const sourceId = req.params.id;
-			const sourceConfig =
-				sourceId == "localParquet" ? this.DFSConfig : config.sources[sourceId];
+			const sourceConfig = config.sources[sourceId];
 			// only return back one row for metadata purposes
 			const isMetadataRequest =
 				(Object.keys(geoserviceParams).length == 1 &&

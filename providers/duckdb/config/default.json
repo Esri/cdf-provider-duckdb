@@ -2,7 +2,16 @@
 	"duckdb": {
 		"sources": {
 			"localParquet": {
-				"dfsConfigPath": "./providers/duckdb/config/DFSconfig.json"
+				"path": "./providers/duckdb/data/smallNYTaxi.parquet",
+				"WKBColumn": "WKB",
+				"geomOutColumn": "geometry",
+				"idField": "OBJECTID",
+				"maxRecordCountPerPage": 10000,
+				"dbWKID": 4326,
+				"properties": {
+					"name": "smallNYTaxi",
+					"description": "one million NY Taxi points"
+				}
 			}
 		}
 	}

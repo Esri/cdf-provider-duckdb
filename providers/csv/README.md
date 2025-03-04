@@ -1,2 +1,0 @@
-# Csv 
-This is a CDF that uses a local csv as the data. It is considered a full fetch provider where the entire datset is fetched on every request. It reads the cities.csv from the `/data` folder and uses `papaparse` to parse the csv file 

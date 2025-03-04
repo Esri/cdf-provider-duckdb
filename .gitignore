@@ -41,3 +41,5 @@ logs
 
 # ignore elastic demo data
 wildfires.json
+
+*.duckdb

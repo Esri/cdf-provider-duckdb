@@ -18,4 +18,5 @@ FROM delta_scan('${deltaPointsConfig.deltaUrl}');`;
 ## Important Notes: 
 - To see full schema of required args see `src/modules/validate.js`
 - `idfield` should **always** be set to OBJECTID, duckdb will create a row number and set it to `OBJECTID` since koop requires an object id field
-- other id fields in your data columns can be accessed with sql where queries 
+- other id fields in your data columns can be accessed with sql where queries
+- for very large datasets, best performance is achieved with loading in a .duckdb file instead of using a memory duckdb db.  
