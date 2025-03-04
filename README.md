@@ -25,6 +25,7 @@ https://github.com/user-attachments/assets/ddb26b4d-38f8-4958-8f86-78f03407621c
 - cd into `providers/duckdb` and do `npm install`
 - cd back into your app base dir and do `npm run start` which should start your CDF app
 - Routes should be displayed in the terminal and the duckdb feature serivce should be accessible at `http://127.0.0.1:8080/duckdb/rest/services/localParquet/FeatureServer/0`
+- Open `frontend/index.html` in a browser for a js web map view of the CDF in action 
 
 ## Resources
 - https://developers.arcgis.com/enterprise-sdk/
