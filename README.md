@@ -1,4 +1,4 @@
-![image](https://github.com/EsriPS/BDT_cdf/assets/28267620/edc83af4-bfc6-41cf-a170-dcf7170dbe60)
+<img src="https://github.com/EsriPS/BDT_cdf/assets/28267620/edc83af4-bfc6-41cf-a170-dcf7170dbe60" alt="image" width="450" height="300"/>
 
 # BDT_cdf
 This repo is an exploratory effort into using custom data feeds with big data. 
