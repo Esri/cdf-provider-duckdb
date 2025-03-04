@@ -71,3 +71,11 @@
 - If you want to make changes to your provider code (like console logging a variable for debugging purposes), navigate to `C:\Program Files\ArcGIS\Server\framework\runtime\customdata\providers` and find your code. Run notepad as admin and open the `model.js` file (or install VSCode on your server).
 - After making changes to your code and saving the file, you will need to restart ArcGIS server. To restart it, search for `Computer Management` in Windows and find `Services`. Inside of `Services` find `ArcGIS Server`, right click, and `Restart`
 - After restarting a new log file should appear in `C:\Program Files\ArcGIS\Server\framework\runtime\customdata\logs`
+
+
+---
+# Understanding how geoservices rest API clients work at a high level: 
+I failed to understand how the interaction works between client and server with geoservices for a while and was quite confused. Hopefully this short write up will help you! The query documentation is listed [here](https://developers.arcgis.com/rest/services-reference/enterprise/query-feature-service-layer/) and see more details [here](https://developers.arcgis.com/enterprise-sdk/guide/custom-data-feeds/pass-through-custom-data-providers/)
+- At high level first an ArcGIS/Geoservices client makes a request to your feature server example `http://127.0.0.1:8080/duckdb/rest/services/myparquet/FeatureServer/0?f=json`. This initial request is just asking for metadata and information about the data server
+- Then the client makes another initial request to something like `http://127.0.0.1:8080/duckdb/rest/services/myparquet/FeatureServer/0/query?f=json&returnIdsOnly=true&returnCountOnly=true&orderByFields=&outSR=102100&returnGeometry=false&spatialRel=esriSpatialRelIntersects&where=1%3D1` because of the `returnIdsOnly` and `returnCountOnly` fields, this request is just asking for the size of your data source.
+- Once the client knows metadata about your feature server and the size of your data source, its able to make queries with pagination as the user scrolls and pans the map 
