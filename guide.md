@@ -1,29 +1,24 @@
 # Step by step guide on creating your own custom datafeed: 
 ### Step 1 - NodeJS and CDF CLI Installation:
 - Install NodeJS using nvm or just manually installing the msi installer. I manually downloaded 20.11.1 windows msi from these [versions](https://nodejs.org/dist/). See this [document](https://developers.arcgis.com/enterprise-sdk/guide/custom-data-feeds/installing-and-configuring-custom-data-feeds/) for matching ArcGIS Enterprise and Windows versions. 
-- Install ArcGIS Enterprise SDK by manually installing the exe from Esri internal release network drive (must be on Esri network) `\\esri.com\software\Esri\Released\113_Final` with the file name `ArcGIS_Enterprise_SDK_Windows_113_190284.exe`. Copy this to your desktop and run the exe
-- After following through setup, restart your cmd window and then do `cdf -h`. This is supposed to display a help menu after installing. For me nothing showed up, so I went to `C:\Program Files\ArcGIS\EnterpriseSDK\customdatacli` and ran `activate_cdf.bat` which solved my issues and made `cdf` a recognizable command.
+- Install ArcGIS Enterprise SDK by installing the exe. I used 11.3 with the file name `ArcGIS_Enterprise_SDK_Windows_113_190284.exe`.
+- After following through the setup, restart your cmd window and then do `cdf -h`. This is supposed to display a help menu after installing. For me nothing showed up, so I went to `C:\Program Files\ArcGIS\EnterpriseSDK\customdatacli` and ran `activate_cdf.bat` which solved my issues and made `cdf` a recognizable command.
 
 ### Step 2 - Creating a new custom datafeed application:
 - Once the CDF cli is installed from the Enterprise SDK, do `cdf createapp <app_name>` which will generate a bunch of nodeJS boilerplate for you. A custom datafeed is built on top of [Koop](https://koopjs.github.io/docs) which is built with [express.js](https://expressjs.com/)
 
 ### Step 3 - Using the custom data providers in this repo: 
 - If you want to create your own custom provider, skip to step 4.
-- cd into your project folder `<app_name>/`
-- Inside of your project folder run the following command (⚠️ this may overwrite your providers folder so only do this if you just created a fresh app with `cdf createapp <app_name>`): 
-`git init && git remote add origin https://github.com/EsriPS/BDT_cdf && git pull origin master && git branch --set-upstream-to=origin/master master`
-- A simple `git clone` won't work because git clone assumes you are copying into an empty directory location. Alternatively, you can `git clone` to a seperate empty folder and then manually copy over the desired provider folders to your project. 
-- Upon cloning it should add a `/providers` folder and a few other files/folders
-- After cloning, you will need to cd into each provider folder and do `npm install`
-- After all dependencies are installed for each provider, cd back to the base directory of `<app_name>` and run the app with `npm start` which should display routes in your terminal
-- If you want to stay up to date with the latest changes of the providers in this repo you can do `git pull` 
+- Download the desired provider from this repo and put into your `/providers` folder/
+- cd into the provider folder you downloaded and do `npm install`
+- After all dependencies are installed for each provider, cd back to the base directory of `<app_name>` and run the app with `npm start` which should display routes in your terminal 
 
 ### Step 4 - Create your own custom data provider for your data source:
 - To create a new custom data feed you need to make a data provider. `cd` into your new app directory and then do `cdf createprovider <customprovidername>`
 - This will add a `/providers` folder and within this there will be a folder named what you named it above
 - You will want to decide if your provider is a pass through provider or a full fetch provider. More info [here](https://developers.arcgis.com/enterprise-sdk/guide/custom-data-feeds/create-a-custom-data-feed-provider/) about the differences 
 - Within the provider there is a `model.js` file which handles the logic for fetching the data and returning GeoJSON 
-- For a simple example on how this works see `/csv` which is a full fetch provider forked from [koop-provider-csv](https://github.com/koopjs/koop-provider-csv). The `model.js` reads from a `config/default.json` which contains metadata and information about the schema structure of the csv. It then uses [Papaparse](https://www.papaparse.com/) to read the csv and then translate it to GeoJSON (see `utils/translate-csv.js`)
+- For a simple example on how this works see the full fetch provider [koop-provider-csv](https://github.com/koopjs/koop-provider-csv). The `model.js` reads from a `config/default.json` which contains metadata and information about the schema structure of the csv. It then uses [Papaparse](https://www.papaparse.com/) to read the csv and then translate it to GeoJSON (see `utils/translate-csv.js`)
 - After adding code to fetch your data from your datasource and return as GeoJSON, test the server with `npm start` which should display a list of routes in the terminal
 - One key thing to note is that there is important metadata and filters that are set on the GeoJSON object you return from your `model.js` file. See [here](https://github.com/koopjs/FeatureServer#featureserverroute) for a list of all the flags to be set and see `/duckdb` for an example
 - To see a query parameter list that will be sent to your CDF geoservice API see [here](https://developers.arcgis.com/rest/services-reference/enterprise/query-feature-service-layer/)
@@ -41,12 +36,7 @@
 - Another option is to upload your code to ArcGIS Server. To do this you use the cdf cli that comes with the ArcGIS Enterprise SDK. Do `cdf export <providername>` which will export the code into a `.cdpk` file. 
 - A `.cdpk` is just a renamed zip file of your data provider code that is uploaded to ArcGIS Server for deployment
 - Once you have the `.cdpk` file, you will need a machine running with ArcGIS server.
-- The easiest way to do this is reach out to Kevin Lam (Principal Product Engineer - klam@esri.com). There is an automated deployment system (which I believe Kevin helps manage) which makes getting an ArcGIS Enterprise machine extremely easy. The other option is to manually setup ArcGIS server, see this [guide](https://enterprise.arcgis.com/en/server/latest/install/windows/steps-to-get-arcgis-for-server-up-and-running.htm)
-- To request a VM you'll need access to VM Ware in Okta (you may have to open a service now ticket for access to this system) and you will need to create an VMWare API token.
-- Once you have an API token, go to https://psecs.esri.com/ (you may need to be on the esri VPN) to request a VM
-- Once requested you can view the build status of your VM here at http://mcsinstall1:8080/view/ECS/job/ECS_Enterprise/ (need to be on Esri VPN)
-- Once the VM is successfully up and running, RDP into it using the IP given to you via email
-- Once you remote in you will need to install the custom datafeeds runtime. This is named `ArcGIS_Custom_Data_Feeds_Windows_113_190285.exe` from Esri internal release network drive (must be on Esri network) `\\esri.com\software\Esri\Released\113_Final`. Make sure to use the correct version for your use case
+- Remote into your server and install the custom datafeeds runtime. This is done by running an .exe file. The file I used was named `ArcGIS_Custom_Data_Feeds_Windows_113_190285.exe` 
 - Run this exe on the server. You are now ready to upload your .cdpk
 
 ### Step 7 - Deploying a CDF to ArcGIS Server:
